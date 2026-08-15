@@ -55,7 +55,7 @@ export default function SignupPage() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          className="w-full border rounded px-3 py-2 bg-white text-gray-900"
         />
         <input
           type="password"
@@ -64,7 +64,7 @@ export default function SignupPage() {
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          className="w-full border rounded px-3 py-2 bg-white text-gray-900"
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button

@@ -48,7 +48,7 @@ export default function ZoneManager({ propertyId }: { propertyId: string }) {
             onChange={(e) => setName(e.target.value)}
             onFocus={() => setExpanded(true)}
             placeholder="e.g. Bathroom 2"
-            className="border rounded px-3 py-2 text-sm flex-1"
+            className="border rounded px-3 py-2 text-sm flex-1 bg-white text-gray-900"
           />
           <button
             type="submit"
@@ -70,7 +70,7 @@ export default function ZoneManager({ propertyId }: { propertyId: string }) {
                 onChange={(e) => setChecklist(e.target.value)}
                 placeholder={"Toilet paper stocked\nNo hair in drain\nTowels folded"}
                 rows={3}
-                className="w-full border rounded px-3 py-2 text-sm mt-1"
+                className="w-full border rounded px-3 py-2 text-sm mt-1 bg-white text-gray-900"
               />
             </label>
             <label className="flex items-center gap-2 text-sm">

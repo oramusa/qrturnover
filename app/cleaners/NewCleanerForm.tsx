@@ -64,19 +64,19 @@ export default function NewCleanerForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-lg p-4 space-y-3 max-w-sm">
+    <form onSubmit={handleSubmit} className="border rounded-lg p-4 space-y-3 max-w-sm bg-white text-gray-900">
       <input
         placeholder="Cleaner's name"
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm"
+        className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
       />
       <input
         placeholder="Phone or email (optional)"
         value={contact}
         onChange={(e) => setContact(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm"
+        className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
       />
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <div className="flex gap-2">

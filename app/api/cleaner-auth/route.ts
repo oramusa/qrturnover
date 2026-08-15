@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Code not recognized" }, { status: 401 });
   }
 
-  const response = NextResponse.json({ ok: true, name: cleaner.name });
+  const response = NextResponse.json({ ok: true, id: cleaner.id, name: cleaner.name });
   const cookieOpts = {
     httpOnly: false, // client needs to read it to show "Logged in as X"
     maxAge: 60 * 60 * 24 * 90, // 90 days — cleaners shouldn't have to re-enter often

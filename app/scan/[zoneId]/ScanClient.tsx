@@ -1,0 +1,172 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import JobControls from "./JobControls";
+import ScanForm from "./ScanForm";
+
+type SessionData = {
+  zone: {
+    id: string;
+    name: string;
+    task_description: string | null;
+    checklist_items: string | null;
+    require_photo: boolean;
+    property_name: string;
+  };
+  cleaner: { id: string; name: string } | null;
+  activeSession: { id: string; job_started_at: string | null; job_finished_at: string | null } | null;
+};
+
+export default function ScanClient({ zoneId }: { zoneId: string }) {
+  const [data, setData] = useState<SessionData | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [code, setCode] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  async function load() {
+    const cleanerId = localStorage.getItem("cleaner_id");
+    const url = cleanerId
+      ? `/api/scan-session?zoneId=${zoneId}&cleanerId=${cleanerId}`
+      : `/api/scan-session?zoneId=${zoneId}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      setLoadError(true);
+      return;
+    }
+    const json: SessionData = await res.json();
+    setData(json);
+    // The stored cleanerId didn't match a real cleaner for this property's host —
+    // clear it instead of getting stuck in a loop of failed lookups.
+    if (cleanerId && !json.cleaner) {
+      localStorage.removeItem("cleaner_id");
+    }
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoneId]);
+
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const typedCode = new FormData(e.currentTarget).get("code") as string;
+    if (!typedCode?.trim()) {
+      setLoginError("Enter the code your host gave you first.");
+      return;
+    }
+    setLoginLoading(true);
+    setLoginError(null);
+
+    const res = await fetch("/api/cleaner-auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ zoneId, code: typedCode }),
+    });
+    const body = await res.json().catch(() => ({}));
+    setLoginLoading(false);
+
+    if (!res.ok) {
+      setLoginError(body.error || "Something went wrong");
+      return;
+    }
+
+    localStorage.setItem("cleaner_id", body.id);
+    localStorage.setItem("cleaner_name", body.name);
+    load();
+  }
+
+  if (loadError) {
+    return (
+      <div className="max-w-sm mx-auto p-6 mt-16 text-center">
+        <p className="text-gray-500">Couldn&apos;t load this page. Check your connection and try again.</p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return <div className="max-w-sm mx-auto p-6 mt-16 text-center text-gray-500">Loading…</div>;
+  }
+
+  const { zone, cleaner, activeSession } = data;
+
+  if (!cleaner) {
+    return (
+      <div className="max-w-sm mx-auto p-6 mt-12">
+        <p className="text-sm text-gray-500">{zone.property_name}</p>
+        <h1 className="text-2xl font-semibold mt-1">{zone.name}</h1>
+        <p className="text-gray-600 mt-4">Enter the code your host gave you to get started.</p>
+        <form onSubmit={handleLogin} className="mt-4 space-y-3">
+          <input
+            name="code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Access code"
+            required
+            autoFocus
+            autoCapitalize="characters"
+            className="w-full border rounded px-4 py-3 text-lg tracking-widest text-center uppercase bg-white text-gray-900"
+          />
+          {loginError && <p className="text-red-600 text-sm">{loginError}</p>}
+          <button
+            type="submit"
+            disabled={loginLoading}
+            className="w-full bg-black text-white rounded py-3 font-medium disabled:opacity-50"
+          >
+            {loginLoading ? "Checking..." : "Continue"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-sm mx-auto p-6 mt-12">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">{zone.property_name}</p>
+        <span className="text-xs bg-gray-100 rounded-full px-2 py-1 text-gray-600">{cleaner.name}</span>
+      </div>
+
+      <h1 className="text-2xl font-semibold">{zone.name}</h1>
+      {zone.task_description && <p className="text-gray-600 mt-2">{zone.task_description}</p>}
+      {zone.checklist_items && (
+        <ul className="mt-3 space-y-1">
+          {zone.checklist_items
+            .split("\n")
+            .filter((line) => line.trim())
+            .map((line, i) => (
+              <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                <span className="text-gray-400 mt-0.5">&#9633;</span>
+                {line.trim()}
+              </li>
+            ))}
+        </ul>
+      )}
+
+      {!activeSession ? (
+        <p className="mt-6 text-sm text-amber-700 bg-amber-50 rounded p-3">
+          No turnover has been started for this property yet. Ask your host to tap
+          &quot;Start turnover&quot; in the app, then scan again.
+        </p>
+      ) : (
+        <>
+          <JobControls
+            sessionId={activeSession.id}
+            cleanerId={cleaner.id}
+            jobStartedAt={activeSession.job_started_at}
+            jobFinishedAt={activeSession.job_finished_at}
+            onChange={load}
+          />
+          {activeSession.job_started_at && !activeSession.job_finished_at && (
+            <ScanForm
+              zoneId={zone.id}
+              sessionId={activeSession.id}
+              cleanerId={cleaner.id}
+              requirePhoto={zone.require_photo}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+}
