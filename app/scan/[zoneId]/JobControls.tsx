@@ -1,21 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function JobControls({
   sessionId,
   cleanerId,
   jobStartedAt,
   jobFinishedAt,
+  onChange,
 }: {
   sessionId: string;
   cleanerId: string;
   jobStartedAt: string | null;
   jobFinishedAt: string | null;
+  onChange: () => void;
 }) {
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [alreadyDone, setAlreadyDone] = useState(false);
 
   async function startJob() {
     setLoading(true);
@@ -25,21 +27,39 @@ export default function JobControls({
       body: JSON.stringify({ sessionId, cleanerId }),
     });
     setLoading(false);
-    router.refresh();
+    onChange();
   }
 
   async function finishJob() {
-    if (!confirm("Mark this turnover as finished? Make sure every zone is scanned first.")) {
+    if (!confirm("Mark this turnover as finished?")) {
       return;
     }
     setLoading(true);
-    await fetch("/api/session/finish-job", {
+    setError(null);
+    const res = await fetch("/api/session/finish-job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId }),
     });
     setLoading(false);
-    router.refresh();
+    if (!res.ok) {
+      const body = await res.json();
+      if (body.alreadyDone) {
+        setAlreadyDone(true);
+        return;
+      }
+      setError(body.error ?? "Couldn't finish the job. Please try again.");
+      return;
+    }
+    onChange();
+  }
+
+  if (alreadyDone) {
+    return (
+      <div className="mt-4 text-sm bg-green-50 text-green-800 rounded p-3">
+        This turnover was already marked complete — nothing more to do here. Thanks!
+      </div>
+    );
   }
 
   if (jobFinishedAt) {
@@ -63,15 +83,18 @@ export default function JobControls({
   }
 
   return (
-    <div className="mt-4 flex items-center justify-between bg-gray-50 rounded p-3">
-      <span className="text-sm text-gray-600">Job in progress — scan each zone below</span>
-      <button
-        onClick={finishJob}
-        disabled={loading}
-        className="text-sm border rounded px-3 py-2 bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-50"
-      >
-        Finish job
-      </button>
+    <div className="mt-4">
+      <div className="flex items-center justify-between bg-gray-50 rounded p-3">
+        <span className="text-sm text-gray-600">Job in progress — scan each zone below</span>
+        <button
+          onClick={finishJob}
+          disabled={loading}
+          className="text-sm border rounded px-3 py-2 bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-50"
+        >
+          Finish job
+        </button>
+      </div>
+      {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
     </div>
   );
 }

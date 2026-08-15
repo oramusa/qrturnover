@@ -7,9 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 export default function StartTurnoverButton({
   propertyId,
   hasActiveSession,
+  activeSessionId,
 }: {
   propertyId: string;
   hasActiveSession: boolean;
+  activeSessionId?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -23,8 +25,26 @@ export default function StartTurnoverButton({
   }
 
   async function completeTurnover() {
-    setLoading(true);
     const supabase = createClient();
+
+    if (activeSessionId) {
+      const [{ data: zones }, { data: scans }] = await Promise.all([
+        supabase.from("zones").select("id, name").eq("property_id", propertyId),
+        supabase.from("scan_records").select("zone_id").eq("session_id", activeSessionId),
+      ]);
+      const scannedIds = new Set((scans ?? []).map((s) => s.zone_id));
+      const pending = (zones ?? []).filter((z) => !scannedIds.has(z.id));
+      if (pending.length > 0) {
+        const proceed = confirm(
+          `${pending.length} zone${pending.length === 1 ? "" : "s"} not yet scanned: ${pending
+            .map((z) => z.name)
+            .join(", ")}.\n\nMark this turnover complete anyway?`
+        );
+        if (!proceed) return;
+      }
+    }
+
+    setLoading(true);
     await supabase
       .from("turnover_sessions")
       .update({ status: "complete", completed_at: new Date().toISOString() })
