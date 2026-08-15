@@ -6,6 +6,7 @@ import CleanerAssignment from "./CleanerAssignment";
 import AutoRefresh from "./AutoRefresh";
 import DeleteZoneButton from "./DeleteZoneButton";
 import DeletePropertyButton from "./DeletePropertyButton";
+import ZoneChecklist from "./ZoneChecklist";
 
 function formatDuration(startedAt: string | null, finishedAt: string | null) {
   if (!startedAt || !finishedAt) return null;
@@ -35,7 +36,9 @@ export default async function PropertyPage({
 
   const { data: zones } = await supabase
     .from("zones")
-    .select("id, name, task_description, checklist_items, require_photo, sort_order")
+    .select(
+      "id, name, task_description, checklist_items, require_photo, sort_order, zone_checklist_items ( id, label, sort_order )"
+    )
     .eq("property_id", id)
     .order("sort_order", { ascending: true });
 
@@ -133,45 +136,52 @@ export default async function PropertyPage({
           const done = !!activeSession && scannedZoneIds.has(zone.id);
           const photoUrl = activePhotoByZone.get(zone.id);
           return (
-            <div
-              key={zone.id}
-              className="border rounded-lg px-4 py-3 flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                {photoUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={photoUrl}
-                    alt={`${zone.name} photo`}
-                    className="w-10 h-10 rounded object-cover border shrink-0"
-                  />
-                )}
-                <div className="min-w-0">
-                  <p className="font-medium flex items-center gap-2">
-                    {zone.name}
-                    {zone.require_photo && (
-                      <span className="text-[10px] text-gray-400 border rounded-full px-1.5 py-0.5">
-                        photo required
-                      </span>
-                    )}
-                  </p>
-                  {zone.task_description && (
-                    <p className="text-xs text-gray-500">{zone.task_description}</p>
+            <div key={zone.id} className="border rounded-lg px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  {photoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photoUrl}
+                      alt={`${zone.name} photo`}
+                      className="w-10 h-10 rounded object-cover border shrink-0"
+                    />
                   )}
+                  <div className="min-w-0">
+                    <p className="font-medium flex items-center gap-2">
+                      {zone.name}
+                      {zone.require_photo && (
+                        <span className="text-[10px] text-gray-400 border rounded-full px-1.5 py-0.5">
+                          photo required
+                        </span>
+                      )}
+                    </p>
+                    {zone.task_description && (
+                      <p className="text-xs text-gray-500">{zone.task_description}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {activeSession && (
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {done ? "Done" : "Pending"}
+                    </span>
+                  )}
+                  <DeleteZoneButton zoneId={zone.id} zoneName={zone.name} />
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                {activeSession && (
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {done ? "Done" : "Pending"}
-                  </span>
-                )}
-                <DeleteZoneButton zoneId={zone.id} zoneName={zone.name} />
-              </div>
+              <ZoneChecklist
+                zoneId={zone.id}
+                zoneName={zone.name}
+                items={(zone.zone_checklist_items ?? [])
+                  .slice()
+                  .sort((a, b) => a.sort_order - b.sort_order)
+                  .map((i) => ({ id: i.id, label: i.label }))}
+              />
             </div>
           );
         })}
