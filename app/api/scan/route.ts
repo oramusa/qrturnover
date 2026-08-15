@@ -46,10 +46,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { data: checklistItems } = await supabase
+  const { data: checklistItems, error: checklistItemsError } = await supabase
     .from("zone_checklist_items")
     .select("id")
     .eq("zone_id", zoneId);
+
+  if (checklistItemsError) {
+    return NextResponse.json({ error: checklistItemsError.message }, { status: 500 });
+  }
 
   if (checklistItems && checklistItems.length > 0) {
     const { data: completions } = await supabase

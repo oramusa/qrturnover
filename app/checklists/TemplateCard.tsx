@@ -12,31 +12,47 @@ export default function TemplateCard({
 }: {
   templateId: string;
   roomType: string;
-  items: { id: string; label: string }[];
+  items: { id: string; label: string; sort_order: number }[];
 }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   async function handleAdd(label: string) {
+    setError(null);
     const supabase = createClient();
-    await supabase.from("checklist_template_items").insert({
+    const { error } = await supabase.from("checklist_template_items").insert({
       template_id: templateId,
       label,
-      sort_order: items.length,
+      sort_order: items.length > 0 ? Math.max(...items.map((i) => i.sort_order)) + 1 : 0,
     });
+    if (error) {
+      setError(error.message);
+      return;
+    }
     router.refresh();
   }
 
   async function handleEdit(id: string, label: string) {
+    setError(null);
     const supabase = createClient();
-    await supabase.from("checklist_template_items").update({ label }).eq("id", id);
+    const { error } = await supabase.from("checklist_template_items").update({ label }).eq("id", id);
+    if (error) {
+      setError(error.message);
+      return;
+    }
     router.refresh();
   }
 
   async function handleDelete(id: string) {
+    setError(null);
     const supabase = createClient();
-    await supabase.from("checklist_template_items").delete().eq("id", id);
+    const { error } = await supabase.from("checklist_template_items").delete().eq("id", id);
+    if (error) {
+      setError(error.message);
+      return;
+    }
     router.refresh();
   }
 
@@ -76,7 +92,9 @@ export default function TemplateCard({
             onAdd={handleAdd}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            disabled={deleting}
           />
+          {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </div>
       )}
     </div>

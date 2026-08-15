@@ -9,7 +9,7 @@ export default function ChecklistItemsEditor({
   onDelete,
   disabled,
 }: {
-  items: { id: string; label: string }[];
+  items: { id: string; label: string; sort_order: number }[];
   onAdd: (label: string) => Promise<void>;
   onEdit: (id: string, label: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;

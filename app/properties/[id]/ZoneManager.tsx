@@ -15,14 +15,15 @@ export default function ZoneManager({ propertyId }: { propertyId: string }) {
   const router = useRouter();
 
   async function addZone(zoneName: string, extra?: { checklist?: string; requirePhoto?: boolean }) {
-    if (!zoneName.trim()) return;
+    const trimmedZoneName = zoneName.trim();
+    if (!trimmedZoneName) return;
     setLoading(true);
     const supabase = createClient();
     const { data: newZone } = await supabase
       .from("zones")
       .insert({
         property_id: propertyId,
-        name: zoneName,
+        name: trimmedZoneName,
         checklist_items: extra?.checklist || null,
         require_photo: extra?.requirePhoto ?? false,
       })
@@ -39,7 +40,7 @@ export default function ZoneManager({ propertyId }: { propertyId: string }) {
         .eq("host_id", user!.id);
 
       const match = templates?.find(
-        (t) => t.room_type.toLowerCase() === zoneName.trim().toLowerCase()
+        (t) => t.room_type.toLowerCase() === trimmedZoneName.toLowerCase()
       );
       if (match && match.checklist_template_items.length > 0) {
         await supabase.from("zone_checklist_items").insert(
@@ -49,6 +50,20 @@ export default function ZoneManager({ propertyId }: { propertyId: string }) {
             sort_order: item.sort_order,
           }))
         );
+      } else if (extra?.checklist && extra.checklist.trim() !== "") {
+        const lines = extra.checklist
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line !== "");
+        if (lines.length > 0) {
+          await supabase.from("zone_checklist_items").insert(
+            lines.map((label, index) => ({
+              zone_id: newZone.id,
+              label,
+              sort_order: index,
+            }))
+          );
+        }
       }
     }
 

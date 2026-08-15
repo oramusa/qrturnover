@@ -196,7 +196,7 @@ export default async function PropertyPage({
                 items={(zone.zone_checklist_items ?? [])
                   .slice()
                   .sort((a, b) => a.sort_order - b.sort_order)
-                  .map((i) => ({ id: i.id, label: i.label }))}
+                  .map((i) => ({ id: i.id, label: i.label, sort_order: i.sort_order }))}
               />
             </div>
           );

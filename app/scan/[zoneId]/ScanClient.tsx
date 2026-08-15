@@ -23,6 +23,7 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
   const [code, setCode] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [checklistError, setChecklistError] = useState<string | null>(null);
 
   async function load() {
     const cleanerId = localStorage.getItem("cleaner_id");
@@ -137,9 +138,11 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
                 <input
                   type="checkbox"
                   checked={item.completed}
+                  disabled={!activeSession}
                   onChange={async (e) => {
                     const checked = e.target.checked;
-                    await fetch("/api/scan-item", {
+                    setChecklistError(null);
+                    const res = await fetch("/api/scan-item", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -148,6 +151,9 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
                         completed: checked,
                       }),
                     });
+                    if (!res.ok) {
+                      setChecklistError("Couldn't save that — please try again.");
+                    }
                     load();
                   }}
                 />
@@ -157,6 +163,7 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
           ))}
         </ul>
       )}
+      {checklistError && <p className="text-red-600 text-sm mt-1">{checklistError}</p>}
 
       {!activeSession ? (
         <p className="mt-6 text-sm text-amber-700 bg-amber-50 rounded p-3">
