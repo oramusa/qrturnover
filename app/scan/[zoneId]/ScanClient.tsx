@@ -9,7 +9,7 @@ type SessionData = {
     id: string;
     name: string;
     task_description: string | null;
-    checklist_items: string | null;
+    checklist: { id: string; label: string; completed: boolean }[];
     require_photo: boolean;
     property_name: string;
   };
@@ -129,17 +129,32 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
 
       <h1 className="text-2xl font-semibold">{zone.name}</h1>
       {zone.task_description && <p className="text-gray-600 mt-2">{zone.task_description}</p>}
-      {zone.checklist_items && (
-        <ul className="mt-3 space-y-1">
-          {zone.checklist_items
-            .split("\n")
-            .filter((line) => line.trim())
-            .map((line, i) => (
-              <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                <span className="text-gray-400 mt-0.5">&#9633;</span>
-                {line.trim()}
-              </li>
-            ))}
+      {zone.checklist.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {zone.checklist.map((item) => (
+            <li key={item.id}>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={item.completed}
+                  onChange={async (e) => {
+                    const checked = e.target.checked;
+                    await fetch("/api/scan-item", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        sessionId: activeSession?.id,
+                        itemId: item.id,
+                        completed: checked,
+                      }),
+                    });
+                    load();
+                  }}
+                />
+                {item.label}
+              </label>
+            </li>
+          ))}
         </ul>
       )}
 
@@ -163,6 +178,7 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
               sessionId={activeSession.id}
               cleanerId={cleaner.id}
               requirePhoto={zone.require_photo}
+              allItemsChecked={zone.checklist.every((i) => i.completed)}
             />
           )}
         </>

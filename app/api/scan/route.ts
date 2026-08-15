@@ -46,6 +46,27 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const { data: checklistItems } = await supabase
+    .from("zone_checklist_items")
+    .select("id")
+    .eq("zone_id", zoneId);
+
+  if (checklistItems && checklistItems.length > 0) {
+    const { data: completions } = await supabase
+      .from("scan_item_completions")
+      .select("item_id")
+      .eq("session_id", sessionId)
+      .in("item_id", checklistItems.map((i) => i.id));
+
+    const remaining = checklistItems.length - (completions?.length ?? 0);
+    if (remaining > 0) {
+      return NextResponse.json(
+        { error: `${remaining} checklist item${remaining === 1 ? "" : "s"} still need${remaining === 1 ? "s" : ""} to be checked off` },
+        { status: 400 }
+      );
+    }
+  }
+
   let photoUrl: string | null = null;
   if (photo && photo.size > 0) {
     const ext = photo.name.split(".").pop() || "jpg";

@@ -7,11 +7,13 @@ export default function ScanForm({
   sessionId,
   cleanerId,
   requirePhoto,
+  allItemsChecked,
 }: {
   zoneId: string;
   sessionId: string;
   cleanerId: string;
   requirePhoto?: boolean;
+  allItemsChecked: boolean;
 }) {
   const [photo, setPhoto] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -68,10 +70,13 @@ export default function ScanForm({
           className="block w-full text-sm mt-1"
         />
       </label>
+      {!allItemsChecked && (
+        <p className="text-xs text-amber-700">Check off every item above before marking this zone done.</p>
+      )}
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <button
         type="submit"
-        disabled={status === "submitting"}
+        disabled={status === "submitting" || !allItemsChecked}
         className="w-full bg-black text-white rounded py-3 font-medium disabled:opacity-50"
       >
         {status === "submitting" ? "Submitting..." : "Mark done"}

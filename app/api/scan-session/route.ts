@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const { data: zone } = await supabase
     .from("zones")
     .select(
-      "id, name, task_description, checklist_items, require_photo, property_id, properties ( name, host_id )"
+      "id, name, task_description, require_photo, property_id, properties ( name, host_id )"
     )
     .eq("id", zoneId)
     .single();
@@ -50,12 +50,33 @@ export async function GET(req: NextRequest) {
     .limit(1)
     .maybeSingle();
 
+  const { data: checklistItems } = await supabase
+    .from("zone_checklist_items")
+    .select("id, label, sort_order")
+    .eq("zone_id", zoneId)
+    .order("sort_order", { ascending: true });
+
+  let completedIds = new Set<string>();
+  if (activeSession) {
+    const { data: completions } = await supabase
+      .from("scan_item_completions")
+      .select("item_id")
+      .eq("session_id", activeSession.id);
+    completedIds = new Set((completions ?? []).map((c) => c.item_id));
+  }
+
+  const checklist = (checklistItems ?? []).map((item) => ({
+    id: item.id,
+    label: item.label,
+    completed: completedIds.has(item.id),
+  }));
+
   return NextResponse.json({
     zone: {
       id: zone.id,
       name: zone.name,
       task_description: zone.task_description,
-      checklist_items: zone.checklist_items,
+      checklist,
       require_photo: zone.require_photo,
       property_name: propertyName,
     },
