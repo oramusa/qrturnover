@@ -18,12 +18,40 @@ export default function ZoneManager({ propertyId }: { propertyId: string }) {
     if (!zoneName.trim()) return;
     setLoading(true);
     const supabase = createClient();
-    await supabase.from("zones").insert({
-      property_id: propertyId,
-      name: zoneName,
-      checklist_items: extra?.checklist || null,
-      require_photo: extra?.requirePhoto ?? false,
-    });
+    const { data: newZone } = await supabase
+      .from("zones")
+      .insert({
+        property_id: propertyId,
+        name: zoneName,
+        checklist_items: extra?.checklist || null,
+        require_photo: extra?.requirePhoto ?? false,
+      })
+      .select("id")
+      .single();
+
+    if (newZone) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const { data: templates } = await supabase
+        .from("checklist_templates")
+        .select("id, room_type, checklist_template_items ( label, sort_order )")
+        .eq("host_id", user!.id);
+
+      const match = templates?.find(
+        (t) => t.room_type.toLowerCase() === zoneName.trim().toLowerCase()
+      );
+      if (match && match.checklist_template_items.length > 0) {
+        await supabase.from("zone_checklist_items").insert(
+          match.checklist_template_items.map((item) => ({
+            zone_id: newZone.id,
+            label: item.label,
+            sort_order: item.sort_order,
+          }))
+        );
+      }
+    }
+
     setName("");
     setChecklist("");
     setRequirePhoto(false);
