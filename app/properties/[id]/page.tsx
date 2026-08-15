@@ -78,6 +78,14 @@ export default async function PropertyPage({
       .map((r) => [r.zone_id, r.photo_url as string])
   );
 
+  const { data: itemCompletions } = activeSession
+    ? await supabase
+        .from("scan_item_completions")
+        .select("item_id")
+        .eq("session_id", activeSession.id)
+    : { data: [] as { item_id: string }[] };
+  const completedItemIds = new Set((itemCompletions ?? []).map((c) => c.item_id));
+
   if (!property) {
     return <div className="p-6">Property not found.</div>;
   }
@@ -163,13 +171,21 @@ export default async function PropertyPage({
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   {activeSession && (
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {done ? "Done" : "Pending"}
-                    </span>
+                    <>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {done ? "Done" : "Pending"}
+                      </span>
+                      {(zone.zone_checklist_items?.length ?? 0) > 0 && (
+                        <span className="text-xs text-gray-400">
+                          {zone.zone_checklist_items!.filter((i) => completedItemIds.has(i.id)).length}/
+                          {zone.zone_checklist_items!.length} items
+                        </span>
+                      )}
+                    </>
                   )}
                   <DeleteZoneButton zoneId={zone.id} zoneName={zone.name} />
                 </div>
