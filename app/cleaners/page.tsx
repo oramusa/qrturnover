@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import NewCleanerForm from "./NewCleanerForm";
+import DeleteCleanerButton from "./DeleteCleanerButton";
 
 export default async function CleanersPage() {
   const supabase = await createClient();
@@ -39,9 +40,12 @@ export default async function CleanersPage() {
                   <p className="text-sm text-gray-500">{cleaner.contact}</p>
                 )}
               </div>
-              <span className="text-xs font-mono bg-gray-100 text-gray-900 px-2 py-1 rounded">
-                {cleaner.access_code}
-              </span>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs font-mono bg-gray-100 text-gray-900 px-2 py-1 rounded">
+                  {cleaner.access_code}
+                </span>
+                <DeleteCleanerButton cleanerId={cleaner.id} cleanerName={cleaner.name} />
+              </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">
               {cleaner.property_cleaners?.length

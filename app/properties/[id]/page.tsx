@@ -3,6 +3,9 @@ import Link from "next/link";
 import ZoneManager from "./ZoneManager";
 import StartTurnoverButton from "./StartTurnoverButton";
 import CleanerAssignment from "./CleanerAssignment";
+import AutoRefresh from "./AutoRefresh";
+import DeleteZoneButton from "./DeleteZoneButton";
+import DeletePropertyButton from "./DeletePropertyButton";
 
 function formatDuration(startedAt: string | null, finishedAt: string | null) {
   if (!startedAt || !finishedAt) return null;
@@ -89,17 +92,23 @@ export default async function PropertyPage({
             <p className="text-sm text-gray-500">{property.address}</p>
           )}
         </div>
-        <Link
-          href={`/properties/${id}/print`}
-          className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900"
-        >
-          Print QR sheet
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/properties/${id}/print`}
+            className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900"
+          >
+            Print QR sheet
+          </Link>
+          <DeletePropertyButton propertyId={id} propertyName={property.name} />
+        </div>
       </div>
+
+      <AutoRefresh enabled={!!activeSession} />
 
       <StartTurnoverButton
         propertyId={id}
         hasActiveSession={!!activeSession}
+        activeSessionId={activeSession?.id}
       />
 
       {activeSession && (
@@ -151,15 +160,18 @@ export default async function PropertyPage({
                   )}
                 </div>
               </div>
-              {activeSession && (
-                <span
-                  className={`text-xs px-2 py-1 rounded-full shrink-0 ${
-                    done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  {done ? "Done" : "Pending"}
-                </span>
-              )}
+              <div className="flex items-center gap-3 shrink-0">
+                {activeSession && (
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {done ? "Done" : "Pending"}
+                  </span>
+                )}
+                <DeleteZoneButton zoneId={zone.id} zoneName={zone.name} />
+              </div>
             </div>
           );
         })}
