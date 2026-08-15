@@ -34,15 +34,23 @@ export async function POST(req: NextRequest) {
   }
 
   if (completed) {
-    await supabase
+    const { error } = await supabase
       .from("scan_item_completions")
       .upsert({ session_id: sessionId, item_id: itemId }, { onConflict: "session_id,item_id" });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   } else {
-    await supabase
+    const { error } = await supabase
       .from("scan_item_completions")
       .delete()
       .eq("session_id", sessionId)
       .eq("item_id", itemId);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ ok: true });
