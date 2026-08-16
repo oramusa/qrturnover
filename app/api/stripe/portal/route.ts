@@ -17,11 +17,18 @@ export async function POST() {
     return NextResponse.json({ error: "Not logged in" }, { status: 401 });
   }
 
-  const { data: host } = await supabase
+  const { data: host, error } = await supabase
     .from("hosts")
     .select("stripe_customer_id")
     .eq("id", user.id)
     .single();
+
+  if (error) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
 
   if (!host?.stripe_customer_id) {
     return NextResponse.json(
