@@ -2,17 +2,12 @@
 
 import { useState } from "react";
 
-function daysUntil(dateString: string) {
-  const ms = new Date(dateString).getTime() - Date.now();
-  return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
-}
-
 export default function BillingCard({
   subscriptionStatus,
-  trialEndsAt,
+  trialDaysLeft,
 }: {
   subscriptionStatus: string | null;
-  trialEndsAt: string | null;
+  trialDaysLeft: number | null;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,37 +22,54 @@ export default function BillingCard({
       setError(body.error || "Something went wrong. Please try again.");
       return;
     }
+    if (!body.url) {
+      setLoading(false);
+      setError("Something went wrong. Please try again.");
+      return;
+    }
     window.location.href = body.url;
   }
 
   const isActive = subscriptionStatus === "active";
-  const needsAttention =
-    subscriptionStatus === "past_due" || subscriptionStatus === "canceled";
+  const isPastDue = subscriptionStatus === "past_due";
+  const needsAttention = isPastDue || subscriptionStatus === "canceled";
+  const goToPortal = isActive || isPastDue;
 
   return (
     <div className="border rounded-lg p-4 mb-6 flex items-center justify-between gap-4">
       <div>
         {isActive && <p className="text-sm font-medium">Subscribed — $7/mo</p>}
-        {subscriptionStatus === "trialing" && trialEndsAt && (
+        {subscriptionStatus === "trialing" && trialDaysLeft !== null && (
           <p className="text-sm font-medium">
-            Trial ends in {daysUntil(trialEndsAt)} day{daysUntil(trialEndsAt) === 1 ? "" : "s"} — $7/mo after
+            Trial ends in {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} — $7/mo after
           </p>
         )}
         {needsAttention && (
           <p className="text-sm font-medium text-amber-700">
-            {subscriptionStatus === "past_due"
+            {isPastDue
               ? "Payment issue — please update your billing."
               : "Subscription canceled."}
           </p>
         )}
+        {!isActive &&
+          !(subscriptionStatus === "trialing" && trialDaysLeft !== null) &&
+          !needsAttention && (
+            <p className="text-sm font-medium">Subscribe to QRTurnover — $7/mo</p>
+          )}
         {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
       </div>
       <button
-        onClick={() => redirectTo(isActive ? "/api/stripe/portal" : "/api/stripe/checkout")}
+        onClick={() => redirectTo(goToPortal ? "/api/stripe/portal" : "/api/stripe/checkout")}
         disabled={loading}
         className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 shrink-0"
       >
-        {loading ? "Loading..." : isActive ? "Manage subscription" : "Subscribe"}
+        {loading
+          ? "Loading..."
+          : isActive
+          ? "Manage subscription"
+          : isPastDue
+          ? "Update payment method"
+          : "Subscribe"}
       </button>
     </div>
   );

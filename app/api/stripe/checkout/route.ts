@@ -16,15 +16,24 @@ export async function POST() {
     return NextResponse.json({ error: "Not logged in" }, { status: 401 });
   }
 
+  const { data: host, error } = await supabase
+    .from("hosts")
+    .select("stripe_customer_id")
+    .eq("id", user.id)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    customer_email: user.email,
+    ...(host?.stripe_customer_id
+      ? { customer: host.stripe_customer_id }
+      : { customer_email: user.email }),
     line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=success`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=cancelled`,
-    subscription_data: {
-      trial_period_days: 14,
-    },
     metadata: { host_id: user.id },
   });
 

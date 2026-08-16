@@ -24,8 +24,9 @@ export async function POST() {
     .single();
 
   if (error) {
+    console.error("Failed to load host for billing portal session:", error);
     return NextResponse.json(
-      { error: error.message },
+      { error: "Couldn't load your billing details. Please try again." },
       { status: 500 }
     );
   }
