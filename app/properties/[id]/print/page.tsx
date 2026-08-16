@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { zoneQrDataUrl } from "@/lib/qrcode";
 import PrintButton from "./PrintButton";
@@ -31,7 +32,14 @@ export default async function PrintSheetPage({
 
   return (
     <div className="max-w-3xl mx-auto p-6 print:p-0">
-      <div className="flex items-center justify-between mb-6 print:hidden">
+      <Link
+        href={`/properties/${id}`}
+        className="text-sm text-gray-500 underline print:hidden"
+      >
+        &larr; Back to property
+      </Link>
+
+      <div className="flex items-center justify-between mt-2 mb-6 print:hidden">
         <h1 className="text-xl font-semibold">
           Print QR codes — {property?.name}
         </h1>
