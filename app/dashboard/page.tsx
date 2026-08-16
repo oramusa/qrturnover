@@ -1,12 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import NewPropertyForm from "./NewPropertyForm";
+import BillingCard from "./BillingCard";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const { data: host } = await supabase
+    .from("hosts")
+    .select("subscription_status, trial_ends_at")
+    .eq("id", user!.id)
+    .single();
 
   const { data: properties } = await supabase
     .from("properties")
@@ -36,6 +43,11 @@ export default async function DashboardPage() {
           </form>
         </div>
       </div>
+
+      <BillingCard
+        subscriptionStatus={host?.subscription_status ?? null}
+        trialEndsAt={host?.trial_ends_at ?? null}
+      />
 
       <NewPropertyForm />
 
