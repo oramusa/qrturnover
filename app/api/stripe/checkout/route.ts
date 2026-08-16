@@ -23,7 +23,11 @@ export async function POST() {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Failed to look up host for checkout session", error);
+    return NextResponse.json(
+      { error: "Couldn't start checkout. Please try again." },
+      { status: 500 }
+    );
   }
 
   const session = await stripe.checkout.sessions.create({
