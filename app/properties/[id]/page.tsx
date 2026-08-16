@@ -77,6 +77,9 @@ export default async function PropertyPage({
       .filter((r) => r.photo_url)
       .map((r) => [r.zone_id, r.photo_url as string])
   );
+  const activeScannedAtByZone = new Map(
+    (activeSession?.scan_records ?? []).map((r) => [r.zone_id, r.scanned_at as string])
+  );
 
   const { data: itemCompletions } = activeSession
     ? await supabase
@@ -148,6 +151,7 @@ export default async function PropertyPage({
         {zones?.map((zone) => {
           const done = !!activeSession && scannedZoneIds.has(zone.id);
           const photoUrl = activePhotoByZone.get(zone.id);
+          const scannedAt = activeScannedAtByZone.get(zone.id);
           return (
             <div key={zone.id} className="border rounded-lg px-4 py-3">
               <div className="flex items-center justify-between gap-3">
@@ -182,7 +186,14 @@ export default async function PropertyPage({
                           done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        {done ? "Done" : "Pending"}
+                        {done && scannedAt
+                          ? `Done at ${new Date(scannedAt).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}`
+                          : done
+                            ? "Done"
+                            : "Pending"}
                       </span>
                       {(zone.zone_checklist_items?.length ?? 0) > 0 && (
                         <span className="text-xs text-gray-400">
