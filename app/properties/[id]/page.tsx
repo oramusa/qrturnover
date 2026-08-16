@@ -119,7 +119,7 @@ export default async function PropertyPage({
         </div>
       </div>
 
-      <AutoRefresh enabled={!!activeSession} />
+      <AutoRefresh enabled={!!activeSession} sessionId={activeSession?.id} />
 
       <StartTurnoverButton
         propertyId={id}

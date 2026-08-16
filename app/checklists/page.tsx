@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import NewTemplateForm from "./NewTemplateForm";
 import TemplateCard from "./TemplateCard";
+import StarterTemplatePicker from "./StarterTemplatePicker";
 
 export default async function ChecklistsPage() {
   const supabase = await createClient();
@@ -32,6 +33,8 @@ export default async function ChecklistsPage() {
         name automatically start with these items — each zone then owns its own independent
         copy, so editing a zone never changes the template.
       </p>
+
+      <StarterTemplatePicker existingRoomTypes={(templates ?? []).map((t) => t.room_type)} />
 
       <NewTemplateForm />
 

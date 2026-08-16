@@ -245,3 +245,9 @@ cross join lateral unnest(string_to_array(z.checklist_items, E'\n')) with ordina
 where z.checklist_items is not null
   and trim(t.line) <> ''
   and not exists (select 1 from public.zone_checklist_items zci where zci.zone_id = z.id);
+
+-- Realtime: lets the host's dashboard subscribe to live changes instead of polling.
+-- Existing RLS SELECT policies on these tables still govern what a subscriber can see.
+alter publication supabase_realtime add table public.scan_records;
+alter publication supabase_realtime add table public.scan_item_completions;
+alter publication supabase_realtime add table public.turnover_sessions;
