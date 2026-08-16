@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ScanForm({
   zoneId,
@@ -15,6 +16,7 @@ export default function ScanForm({
   requirePhoto?: boolean;
   allItemsChecked: boolean;
 }) {
+  const router = useRouter();
   const [photo, setPhoto] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +51,12 @@ export default function ScanForm({
         <p className="text-sm text-gray-500 mt-1">
           Scan the next zone's code when you're ready.
         </p>
+        <button
+          onClick={() => router.back()}
+          className="mt-4 text-sm border rounded px-4 py-2 hover:bg-gray-50"
+        >
+          &larr; Back
+        </button>
       </div>
     );
   }
