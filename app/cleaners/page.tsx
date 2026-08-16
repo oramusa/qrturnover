@@ -17,9 +17,14 @@ export default async function CleanersPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <Link href="/dashboard" className="text-sm text-gray-500 underline">
-        &larr; Dashboard
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/dashboard" className="text-sm text-gray-500 underline">
+          &larr; Dashboard
+        </Link>
+        <form action="/api/auth/signout" method="post">
+          <button className="text-sm text-gray-500 underline">Log out</button>
+        </form>
+      </div>
 
       <h1 className="text-2xl font-semibold mt-2 mb-6">Cleaners</h1>
 

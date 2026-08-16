@@ -92,9 +92,14 @@ export default async function PropertyPage({
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <Link href="/dashboard" className="text-sm text-gray-500 underline">
-        &larr; All properties
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/dashboard" className="text-sm text-gray-500 underline">
+          &larr; All properties
+        </Link>
+        <form action="/api/auth/signout" method="post">
+          <button className="text-sm text-gray-500 underline">Log out</button>
+        </form>
+      </div>
 
       <div className="flex items-center justify-between mt-2 mb-6">
         <div>
