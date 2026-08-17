@@ -121,7 +121,10 @@ export default async function HistoryPage({
       .order("started_at", { ascending: false })
       .range((pageNum - 1) * PAGE_SIZE, pageNum * PAGE_SIZE - 1)
   );
-  const { data: sessions, count } = await listQuery;
+  const { data: sessions, count, error: listError } = await listQuery;
+  if (listError) {
+    console.error("History list query failed:", listError);
+  }
 
   const summaryQuery = applyFilters(
     supabase
@@ -271,7 +274,16 @@ export default async function HistoryPage({
         </div>
       </form>
 
-      {rows.length === 0 && (
+      <p className="text-xs text-gray-400 mb-3">
+        Debug — ownPropertyIds: {JSON.stringify(ownPropertyIds)}, count: {String(count)}, rows:{" "}
+        {rows.length}
+      </p>
+      {listError && (
+        <p className="text-red-600 text-sm mb-3">
+          Debug — query error: {listError.message}
+        </p>
+      )}
+      {rows.length === 0 && !listError && (
         <p className="text-gray-500 text-sm">No completed turnovers match these filters yet.</p>
       )}
 
