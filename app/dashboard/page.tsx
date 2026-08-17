@@ -52,6 +52,9 @@ export default async function DashboardPage() {
           <Link href="/checklists" className="text-sm text-gray-500 underline">
             Checklists
           </Link>
+          <Link href="/history" className="text-sm text-gray-500 underline">
+            History
+          </Link>
           <form action="/api/auth/signout" method="post">
             <button className="text-sm text-gray-500 underline">Log out</button>
           </form>

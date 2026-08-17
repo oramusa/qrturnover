@@ -251,7 +251,12 @@ export default async function PropertyPage({
 
       {history.length > 0 && (
         <div className="border-t mt-8 pt-6">
-          <h2 className="text-lg font-medium mb-3">Turnover history</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-medium">Turnover history</h2>
+            <Link href={`/history?property=${id}`} className="text-xs text-gray-500 underline">
+              View full history
+            </Link>
+          </div>
           <div className="space-y-2">
             {history.map((s) => {
               const duration = formatDuration(s.job_started_at, s.job_finished_at);
