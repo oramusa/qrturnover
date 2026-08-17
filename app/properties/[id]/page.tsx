@@ -7,6 +7,7 @@ import AutoRefresh from "./AutoRefresh";
 import DeleteZoneButton from "./DeleteZoneButton";
 import DeletePropertyButton from "./DeletePropertyButton";
 import ZoneChecklist from "./ZoneChecklist";
+import LocalTime from "./LocalTime";
 
 function formatDuration(startedAt: string | null, finishedAt: string | null) {
   if (!startedAt || !finishedAt) return null;
@@ -61,7 +62,7 @@ export default async function PropertyPage({
     .select(
       `id, status, started_at, completed_at, job_started_at, job_finished_at,
        cleaners ( name ),
-       scan_records ( zone_id, scanned_at, photo_url, zones ( name ) )`
+       scan_records ( zone_id, scanned_at, photo_url, cleaners ( name ), zones ( name ) )`
     )
     .eq("property_id", id)
     .order("started_at", { ascending: false })
@@ -79,6 +80,11 @@ export default async function PropertyPage({
   );
   const activeScannedAtByZone = new Map(
     (activeSession?.scan_records ?? []).map((r) => [r.zone_id, r.scanned_at as string])
+  );
+  const activeCleanerByZone = new Map(
+    (activeSession?.scan_records ?? [])
+      .filter((r) => r.cleaners)
+      .map((r) => [r.zone_id, (r.cleaners as unknown as { name: string }).name])
   );
 
   const { data: itemCompletions } = activeSession
@@ -152,6 +158,7 @@ export default async function PropertyPage({
           const done = !!activeSession && scannedZoneIds.has(zone.id);
           const photoUrl = activePhotoByZone.get(zone.id);
           const scannedAt = activeScannedAtByZone.get(zone.id);
+          const scannedBy = activeCleanerByZone.get(zone.id);
           return (
             <div key={zone.id} className="border rounded-lg px-4 py-3">
               <div className="flex items-center justify-between gap-3">
@@ -176,6 +183,9 @@ export default async function PropertyPage({
                     {zone.task_description && (
                       <p className="text-xs text-gray-500">{zone.task_description}</p>
                     )}
+                    {done && scannedBy && (
+                      <p className="text-xs text-gray-400">Scanned by {scannedBy}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
@@ -186,14 +196,15 @@ export default async function PropertyPage({
                           done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        {done && scannedAt
-                          ? `Done at ${new Date(scannedAt).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}`
-                          : done
-                            ? "Done"
-                            : "Pending"}
+                        {done && scannedAt ? (
+                          <>
+                            Done at <LocalTime iso={scannedAt} />
+                          </>
+                        ) : done ? (
+                          "Done"
+                        ) : (
+                          "Pending"
+                        )}
                       </span>
                       {(zone.zone_checklist_items?.length ?? 0) > 0 && (
                         <span className="text-xs text-gray-400">
