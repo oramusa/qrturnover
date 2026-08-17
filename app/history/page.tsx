@@ -92,12 +92,14 @@ export default async function HistoryPage({
     supabase.from("properties").select("id, name").eq("host_id", user!.id).order("name"),
     supabase.from("cleaners").select("id, name").eq("host_id", user!.id).order("name"),
   ]);
+  const ownPropertyIds = (properties ?? []).map((p) => p.id);
 
   const pageNum = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
 
   function applyFilters<T>(query: T): T {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q = query as any;
+    q = q.in("property_id", ownPropertyIds);
     if (params.property) q = q.eq("property_id", params.property);
     if (params.cleaner) q = q.eq("cleaner_id", params.cleaner);
     if (params.from) q = q.gte("started_at", params.from);
@@ -110,12 +112,11 @@ export default async function HistoryPage({
       .from("turnover_sessions")
       .select(
         `id, started_at, job_started_at, job_finished_at,
-         properties!inner ( id, name, host_id, zones ( zone_checklist_items ( id ) ) ),
+         properties ( id, name, zones ( zone_checklist_items ( id ) ) ),
          cleaners ( name ),
          scan_item_completions ( id )`,
         { count: "exact" }
       )
-      .eq("properties.host_id", user!.id)
       .eq("status", "complete")
       .order("started_at", { ascending: false })
       .range((pageNum - 1) * PAGE_SIZE, pageNum * PAGE_SIZE - 1)
@@ -127,10 +128,9 @@ export default async function HistoryPage({
       .from("turnover_sessions")
       .select(
         `job_started_at, job_finished_at,
-         properties!inner ( host_id, zones ( zone_checklist_items ( id ) ) ),
+         properties ( zones ( zone_checklist_items ( id ) ) ),
          scan_item_completions ( id )`
       )
-      .eq("properties.host_id", user!.id)
       .eq("status", "complete")
       .order("started_at", { ascending: false })
       .limit(SUMMARY_CAP)
