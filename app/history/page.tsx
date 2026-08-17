@@ -16,7 +16,7 @@ type SessionRow = {
     zones: { zone_checklist_items: { id: string }[] }[];
   } | null;
   cleaners: { name: string } | null;
-  scan_item_completions: { id: string }[] | null;
+  scan_item_completions: { item_id: string }[] | null;
 };
 
 function computeScore(s: Pick<SessionRow, "properties" | "scan_item_completions">) {
@@ -114,7 +114,7 @@ export default async function HistoryPage({
         `id, started_at, job_started_at, job_finished_at,
          properties ( id, name, zones ( zone_checklist_items ( id ) ) ),
          cleaners ( name ),
-         scan_item_completions ( id )`,
+         scan_item_completions ( item_id )`,
         { count: "exact" }
       )
       .eq("status", "complete")
@@ -132,7 +132,7 @@ export default async function HistoryPage({
       .select(
         `job_started_at, job_finished_at,
          properties ( zones ( zone_checklist_items ( id ) ) ),
-         scan_item_completions ( id )`
+         scan_item_completions ( item_id )`
       )
       .eq("status", "complete")
       .order("started_at", { ascending: false })
@@ -274,16 +274,7 @@ export default async function HistoryPage({
         </div>
       </form>
 
-      <p className="text-xs text-gray-400 mb-3">
-        Debug — ownPropertyIds: {JSON.stringify(ownPropertyIds)}, count: {String(count)}, rows:{" "}
-        {rows.length}
-      </p>
-      {listError && (
-        <p className="text-red-600 text-sm mb-3">
-          Debug — query error: {listError.message}
-        </p>
-      )}
-      {rows.length === 0 && !listError && (
+      {rows.length === 0 && (
         <p className="text-gray-500 text-sm">No completed turnovers match these filters yet.</p>
       )}
 
