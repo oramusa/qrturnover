@@ -1,9 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import LocalTime from "@/app/properties/[id]/LocalTime";
+import TurnoverRow from "./TurnoverRow";
 
 const PAGE_SIZE = 20;
 const SUMMARY_CAP = 500;
+
+type ChecklistItem = { id: string; label: string };
+type Zone = { id: string; name: string; zone_checklist_items: ChecklistItem[] };
+type ScanRecord = {
+  zone_id: string;
+  scanned_at: string;
+  photo_url: string | null;
+  cleaners: { name: string } | null;
+};
 
 type SessionRow = {
   id: string;
@@ -13,10 +22,11 @@ type SessionRow = {
   properties: {
     id: string;
     name: string;
-    zones: { zone_checklist_items: { id: string }[] }[];
+    zones: Zone[];
   } | null;
   cleaners: { name: string } | null;
   scan_item_completions: { item_id: string }[] | null;
+  scan_records: ScanRecord[] | null;
 };
 
 function computeScore(s: Pick<SessionRow, "properties" | "scan_item_completions">) {
@@ -112,9 +122,10 @@ export default async function HistoryPage({
       .from("turnover_sessions")
       .select(
         `id, started_at, job_started_at, job_finished_at,
-         properties ( id, name, zones ( zone_checklist_items ( id ) ) ),
+         properties ( id, name, zones ( id, name, zone_checklist_items ( id, label ) ) ),
          cleaners ( name ),
-         scan_item_completions ( item_id )`,
+         scan_item_completions ( item_id ),
+         scan_records ( zone_id, scanned_at, photo_url, cleaners ( name ) )`,
         { count: "exact" }
       )
       .eq("status", "complete")
@@ -287,39 +298,18 @@ export default async function HistoryPage({
                 const score = computeScore(s);
                 const durationMin = computeDurationMinutes(s);
                 return (
-                  <Link
+                  <TurnoverRow
                     key={s.id}
-                    href={`/properties/${s.properties?.id}`}
-                    className="block border rounded-lg px-4 py-3 text-sm hover:bg-gray-50 hover:text-gray-900"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{s.properties?.name ?? "Unknown property"}</p>
-                        <p className="text-gray-500 text-xs mt-0.5">
-                          <LocalTime
-                            iso={s.started_at}
-                            options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }}
-                          />
-                          {" · "}
-                          {s.cleaners?.name ?? "No cleaner recorded"}
-                          {durationMin !== null ? ` · ${formatDuration(durationMin)}` : ""}
-                        </p>
-                      </div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full shrink-0 ${
-                          score === null
-                            ? "bg-gray-100 text-gray-500"
-                            : score >= 90
-                              ? "bg-green-100 text-green-800"
-                              : score >= 60
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {score !== null ? `${score}% clean score` : "Complete"}
-                      </span>
-                    </div>
-                  </Link>
+                    propertyId={s.properties?.id ?? ""}
+                    propertyName={s.properties?.name ?? "Unknown property"}
+                    cleanerName={s.cleaners?.name ?? null}
+                    startedAt={s.started_at}
+                    durationLabel={durationMin !== null ? formatDuration(durationMin) : null}
+                    score={score}
+                    zones={s.properties?.zones ?? []}
+                    scanRecords={s.scan_records ?? []}
+                    completedItemIds={new Set((s.scan_item_completions ?? []).map((c) => c.item_id))}
+                  />
                 );
               })}
             </div>
