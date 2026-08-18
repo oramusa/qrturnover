@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import TurnoverRow from "./TurnoverRow";
+import { InlineScript } from "@/app/components/InlineScript";
 
 const PAGE_SIZE = 20;
 const SUMMARY_CAP = 500;
@@ -51,6 +52,54 @@ function formatDuration(minutes: number) {
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
+// The From/To date filters are calendar dates in the viewer's own timezone,
+// but started_at is stored in UTC — comparing the raw date string against it
+// shifts the boundary by the viewer's UTC offset (e.g. "Aug 15 local" can be
+// "Aug 16 UTC"). Converts a local YYYY-MM-DD + time-of-day into the matching
+// UTC instant, given an IANA timezone name (falls back to UTC if unknown/absent).
+function localDateToUtcIso(
+  dateStr: string,
+  tz: string | undefined,
+  time: { hour: number; minute: number; second: number }
+): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  if (!tz) {
+    return new Date(Date.UTC(y, m - 1, d, time.hour, time.minute, time.second)).toISOString();
+  }
+  const guessUtc = new Date(Date.UTC(y, m - 1, d, time.hour, time.minute, time.second));
+  try {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const parts = dtf.formatToParts(guessUtc).reduce(
+      (acc, p) => {
+        acc[p.type] = p.value;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+    const asIfUtc = Date.UTC(
+      Number(parts.year),
+      Number(parts.month) - 1,
+      Number(parts.day),
+      Number(parts.hour) % 24,
+      Number(parts.minute),
+      Number(parts.second)
+    );
+    const offsetMs = asIfUtc - guessUtc.getTime();
+    return new Date(guessUtc.getTime() - offsetMs).toISOString();
+  } catch {
+    return guessUtc.toISOString();
+  }
+}
+
 // Groups sessions into relative-time buckets for display. Boundaries use the
 // server's clock (UTC) for simplicity — off by a few hours at the edges of a
 // bucket, which only affects which *heading* a turnover falls under, not the
@@ -90,6 +139,7 @@ export default async function HistoryPage({
     from?: string;
     to?: string;
     page?: string;
+    tz?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -112,8 +162,12 @@ export default async function HistoryPage({
     q = q.in("property_id", ownPropertyIds);
     if (params.property) q = q.eq("property_id", params.property);
     if (params.cleaner) q = q.eq("cleaner_id", params.cleaner);
-    if (params.from) q = q.gte("started_at", params.from);
-    if (params.to) q = q.lte("started_at", `${params.to}T23:59:59`);
+    if (params.from) {
+      q = q.gte("started_at", localDateToUtcIso(params.from, params.tz, { hour: 0, minute: 0, second: 0 }));
+    }
+    if (params.to) {
+      q = q.lte("started_at", localDateToUtcIso(params.to, params.tz, { hour: 23, minute: 59, second: 59 }));
+    }
     return q;
   }
 
@@ -184,6 +238,7 @@ export default async function HistoryPage({
     if (params.cleaner) qs.set("cleaner", params.cleaner);
     if (params.from) qs.set("from", params.from);
     if (params.to) qs.set("to", params.to);
+    if (params.tz) qs.set("tz", params.tz);
     if (page > 1) qs.set("page", String(page));
     const s = qs.toString();
     return s ? `/history?${s}` : "/history";
@@ -225,6 +280,10 @@ export default async function HistoryPage({
       )}
 
       <form method="get" className="border rounded-lg p-4 mb-6 grid gap-3 sm:grid-cols-4">
+        <input type="hidden" name="tz" id="history-tz-input" defaultValue={params.tz ?? ""} />
+        <InlineScript
+          html={`{var n=document.getElementById("history-tz-input");if(n)n.value=Intl.DateTimeFormat().resolvedOptions().timeZone}`}
+        />
         <label className="block">
           <span className="text-xs text-gray-500">Property</span>
           <select
