@@ -71,6 +71,25 @@ export async function GET(req: NextRequest) {
     completed: completedIds.has(item.id),
   }));
 
+  const { data: propertyZones } = await supabase
+    .from("zones")
+    .select("id, name, sort_order")
+    .eq("property_id", zone.property_id)
+    .order("sort_order", { ascending: true });
+
+  let doneZoneIds = new Set<string>();
+  if (activeSession) {
+    const { data: scans } = await supabase
+      .from("scan_records")
+      .select("zone_id")
+      .eq("session_id", activeSession.id);
+    doneZoneIds = new Set((scans ?? []).map((s) => s.zone_id));
+  }
+
+  const otherZones = (propertyZones ?? [])
+    .filter((z) => z.id !== zoneId)
+    .map((z) => ({ id: z.id, name: z.name, done: doneZoneIds.has(z.id) }));
+
   return NextResponse.json({
     zone: {
       id: zone.id,
@@ -84,5 +103,6 @@ export async function GET(req: NextRequest) {
     // (e.g. from a different host's zone) — treat it as logged out.
     cleaner: cleanerId && cleanerName ? { id: cleanerId, name: cleanerName } : null,
     activeSession: activeSession ?? null,
+    otherZones,
   });
 }

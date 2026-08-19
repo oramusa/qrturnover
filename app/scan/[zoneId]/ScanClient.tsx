@@ -15,6 +15,7 @@ type SessionData = {
   };
   cleaner: { id: string; name: string } | null;
   activeSession: { id: string; job_started_at: string | null; job_finished_at: string | null } | null;
+  otherZones: { id: string; name: string; done: boolean }[];
 };
 
 export default function ScanClient({ zoneId }: { zoneId: string }) {
@@ -193,6 +194,7 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
               cleanerId={cleaner.id}
               requirePhoto={zone.require_photo}
               allItemsChecked={zone.checklist.every((i) => i.completed)}
+              otherZones={data.otherZones}
             />
           )}
         </>

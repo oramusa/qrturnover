@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ScanForm({
   zoneId,
@@ -9,12 +10,14 @@ export default function ScanForm({
   cleanerId,
   requirePhoto,
   allItemsChecked,
+  otherZones,
 }: {
   zoneId: string;
   sessionId: string;
   cleanerId: string;
   requirePhoto?: boolean;
   allItemsChecked: boolean;
+  otherZones: { id: string; name: string; done: boolean }[];
 }) {
   const router = useRouter();
   const [photo, setPhoto] = useState<File | null>(null);
@@ -44,13 +47,33 @@ export default function ScanForm({
   }
 
   if (status === "done") {
+    const pendingZones = otherZones.filter((z) => !z.done);
     return (
       <div className="mt-6 text-center">
         <div className="text-4xl mb-2">✅</div>
         <p className="font-medium">Marked done — thank you!</p>
-        <p className="text-sm text-gray-500 mt-1">
-          Scan the next zone's code when you're ready.
-        </p>
+
+        {pendingZones.length > 0 ? (
+          <div className="mt-6 text-left">
+            <p className="text-sm text-gray-500 mb-2 text-center">Scan next zone</p>
+            <div className="space-y-2">
+              {pendingZones.map((z) => (
+                <Link
+                  key={z.id}
+                  href={`/scan/${z.id}`}
+                  className="block rounded-lg border px-4 py-3 bg-white text-gray-900 font-medium text-center active:bg-gray-100"
+                >
+                  {z.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 mt-1">
+            Every zone is scanned — tap &quot;Finish job&quot; above once you&apos;re done.
+          </p>
+        )}
+
         <button
           onClick={() => router.back()}
           className="mt-4 text-sm border rounded px-4 py-2 hover:bg-gray-50"
