@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import LocalTime from "@/app/properties/[id]/LocalTime";
 
 type ChecklistItem = { id: string; label: string };
@@ -14,6 +16,7 @@ type ScanRecord = {
 };
 
 export default function TurnoverRow({
+  sessionId,
   propertyId,
   propertyName,
   cleanerName,
@@ -24,6 +27,7 @@ export default function TurnoverRow({
   scanRecords,
   completedItemIds,
 }: {
+  sessionId: string;
   propertyId: string;
   propertyName: string;
   cleanerName: string | null;
@@ -35,7 +39,24 @@ export default function TurnoverRow({
   completedItemIds: Set<string>;
 }) {
   const [open, setOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
   const scanByZone = new Map(scanRecords.map((r) => [r.zone_id, r]));
+
+  async function handleDelete() {
+    if (
+      !confirm(
+        `Delete this turnover for "${propertyName}"? This removes its scan records and photos — this can't be undone.`
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    const supabase = createClient();
+    await supabase.from("turnover_sessions").delete().eq("id", sessionId);
+    setDeleting(false);
+    router.refresh();
+  }
 
   return (
     <div className="border rounded-lg text-sm">
@@ -117,9 +138,20 @@ export default function TurnoverRow({
               </div>
             );
           })}
-          <Link href={`/properties/${propertyId}`} className="text-xs text-gray-500 underline">
-            Open property page
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href={`/properties/${propertyId}`} className="text-xs text-gray-500 underline">
+              Open property page
+            </Link>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              aria-label={`Delete turnover for ${propertyName}`}
+              className="text-xs text-gray-400 hover:text-red-600 disabled:opacity-50"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -359,6 +359,7 @@ export default async function HistoryPage({
                 return (
                   <TurnoverRow
                     key={s.id}
+                    sessionId={s.id}
                     propertyId={s.properties?.id ?? ""}
                     propertyName={s.properties?.name ?? "Unknown property"}
                     cleanerName={s.cleaners?.name ?? null}
