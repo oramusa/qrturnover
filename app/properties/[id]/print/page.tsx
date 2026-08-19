@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { zoneQrDataUrl } from "@/lib/qrcode";
 import PrintButton from "./PrintButton";
+import EmailQrForm from "./EmailQrForm";
 
 export default async function PrintSheetPage({
   params,
@@ -43,12 +44,16 @@ export default async function PrintSheetPage({
         <h1 className="text-xl font-semibold">
           Print QR codes — {property?.name}
         </h1>
-        <PrintButton />
+        <div className="flex items-center gap-2">
+          <EmailQrForm propertyId={id} />
+          <PrintButton />
+        </div>
       </div>
 
       <p className="text-sm text-gray-500 mb-6 print:hidden">
         Print this page, cut each code apart, and stick one at each zone. Adhesive
-        label sheets (e.g. Avery 5160) work well for a more durable result.
+        label sheets (e.g. Avery 5160) work well for a more durable result. Or send the
+        links straight to a cleaner&apos;s phone instead — no printer needed.
       </p>
 
       <div className="grid grid-cols-3 gap-6 print:grid-cols-3">
