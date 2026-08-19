@@ -138,8 +138,8 @@ export default function TurnoverRow({
               </div>
             );
           })}
-          <div className="flex items-center justify-between">
-            <Link href={`/properties/${propertyId}`} className="text-xs text-gray-500 underline">
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <Link href={`/properties/${propertyId}`} className="text-sm text-gray-500 underline">
               Open property page
             </Link>
             <button
@@ -147,7 +147,7 @@ export default function TurnoverRow({
               onClick={handleDelete}
               disabled={deleting}
               aria-label={`Delete turnover for ${propertyName}`}
-              className="text-xs text-gray-400 hover:text-red-600 disabled:opacity-50"
+              className="text-sm font-medium text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-50 disabled:opacity-50"
             >
               {deleting ? "Deleting..." : "Delete"}
             </button>
