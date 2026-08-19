@@ -134,11 +134,16 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
         <ul className="mt-3 space-y-2">
           {zone.checklist.map((item) => (
             <li key={item.id}>
-              <label className="flex items-center gap-2 text-sm text-gray-700">
+              <label
+                className={`flex items-center gap-3 rounded-lg border px-4 py-3 bg-white text-gray-900 text-base ${
+                  activeSession ? "active:bg-gray-100" : "opacity-50"
+                }`}
+              >
                 <input
                   type="checkbox"
                   checked={item.completed}
                   disabled={!activeSession}
+                  className="w-6 h-6 shrink-0 accent-black"
                   onChange={async (e) => {
                     const checked = e.target.checked;
                     setChecklistError(null);
@@ -157,7 +162,9 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
                     load();
                   }}
                 />
-                {item.label}
+                <span className={item.completed ? "line-through text-gray-400" : ""}>
+                  {item.label}
+                </span>
               </label>
             </li>
           ))}
