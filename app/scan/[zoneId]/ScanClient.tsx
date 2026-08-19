@@ -162,7 +162,7 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
                     load();
                   }}
                 />
-                <span className={item.completed ? "line-through text-gray-400" : ""}>
+                <span className={item.completed ? "line-through text-gray-600" : ""}>
                   {item.label}
                 </span>
               </label>
