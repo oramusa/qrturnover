@@ -27,7 +27,7 @@ export default async function ChecklistsPage() {
           copy, so editing a zone never changes the template.
         </p>
 
-        <StarterTemplatePicker existingRoomTypes={(templates ?? []).map((t) => t.room_type)} />
+        <StarterTemplatePicker />
 
         <NewTemplateForm />
 

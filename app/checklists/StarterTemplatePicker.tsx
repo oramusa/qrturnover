@@ -5,17 +5,10 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { STARTER_TEMPLATE_PACKS } from "@/lib/starterTemplates";
 
-export default function StarterTemplatePicker({
-  existingRoomTypes,
-}: {
-  existingRoomTypes: string[];
-}) {
+export default function StarterTemplatePicker() {
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [skippedRooms, setSkippedRooms] = useState<string[] | null>(null);
   const router = useRouter();
-
-  const existingLower = new Set(existingRoomTypes.map((r) => r.toLowerCase()));
 
   async function applyPack(packId: string) {
     const pack = STARTER_TEMPLATE_PACKS.find((p) => p.id === packId);
@@ -23,7 +16,6 @@ export default function StarterTemplatePicker({
 
     setApplyingId(packId);
     setError(null);
-    setSkippedRooms(null);
 
     const supabase = createClient();
     const {
@@ -35,20 +27,28 @@ export default function StarterTemplatePicker({
       return;
     }
 
-    const roomsToAdd = pack.rooms.filter((r) => !existingLower.has(r.roomType.toLowerCase()));
-    const roomsSkipped = pack.rooms
-      .filter((r) => existingLower.has(r.roomType.toLowerCase()))
-      .map((r) => r.roomType);
-
-    for (const room of roomsToAdd) {
+    for (const room of pack.rooms) {
       const { data: template, error: templateError } = await supabase
         .from("checklist_templates")
-        .insert({ host_id: user.id, room_type: room.roomType })
+        .upsert(
+          { host_id: user.id, room_type: room.roomType },
+          { onConflict: "host_id,room_type" }
+        )
         .select("id")
         .single();
 
       if (templateError || !template) {
         setError(templateError?.message ?? "Couldn't create the template.");
+        setApplyingId(null);
+        return;
+      }
+
+      const { error: deleteError } = await supabase
+        .from("checklist_template_items")
+        .delete()
+        .eq("template_id", template.id);
+      if (deleteError) {
+        setError(deleteError.message);
         setApplyingId(null);
         return;
       }
@@ -68,7 +68,6 @@ export default function StarterTemplatePicker({
     }
 
     setApplyingId(null);
-    setSkippedRooms(roomsSkipped.length > 0 ? roomsSkipped : null);
     router.refresh();
   }
 
@@ -76,9 +75,9 @@ export default function StarterTemplatePicker({
     <div className="mb-8">
       <h2 className="text-sm font-medium mb-1">Start from a template pack</h2>
       <p className="text-xs text-gray-500 mb-3">
-        Seeds Kitchen, Bathroom, Bedroom, and Living Room templates with common items — you
-        can add, edit, or remove items afterward. Won&apos;t overwrite a room type you already
-        have a template for.
+        Seeds Kitchen, Bathroom, Bedroom, and Living Room templates with this pack&apos;s
+        items — you can add, edit, or remove items afterward. Picking a pack replaces the
+        items in any templates you already have for those room types.
       </p>
       <div className="grid gap-3 sm:grid-cols-3">
         {STARTER_TEMPLATE_PACKS.map((pack) => (
@@ -91,17 +90,12 @@ export default function StarterTemplatePicker({
               disabled={applyingId !== null}
               className="mt-3 text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 w-full"
             >
-              {applyingId === pack.id ? "Adding..." : "Use this pack"}
+              {applyingId === pack.id ? "Applying..." : "Use this pack"}
             </button>
           </div>
         ))}
       </div>
       {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-      {skippedRooms && (
-        <p className="text-xs text-gray-500 mt-2">
-          You already had templates for {skippedRooms.join(", ")} — those were left as-is.
-        </p>
-      )}
     </div>
   );
 }
