@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
 import NewCleanerForm from "./NewCleanerForm";
 import DeleteCleanerButton from "./DeleteCleanerButton";
+import AppNav from "@/app/components/AppNav";
 
 export default async function CleanersPage() {
   const supabase = await createClient();
@@ -16,57 +16,51 @@ export default async function CleanersPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="flex items-center justify-between">
-        <Link href="/dashboard" className="text-sm text-gray-500 underline">
-          &larr; Dashboard
-        </Link>
-        <form action="/api/auth/signout" method="post">
-          <button className="text-sm text-gray-500 underline">Log out</button>
-        </form>
-      </div>
+    <div>
+      <AppNav current="/cleaners" />
+      <div className="max-w-2xl mx-auto p-6">
+        <h1 className="text-2xl font-semibold mb-6">Cleaners</h1>
 
-      <h1 className="text-2xl font-semibold mt-2 mb-6">Cleaners</h1>
+        <NewCleanerForm />
 
-      <NewCleanerForm />
-
-      <div className="space-y-3 mt-8">
-        {cleaners?.length === 0 && (
-          <p className="text-gray-500 text-sm">
-            No cleaners added yet. Add one above, then assign them to properties.
-          </p>
-        )}
-        {cleaners?.map((cleaner) => (
-          <div key={cleaner.id} className="border rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{cleaner.name}</p>
-                {cleaner.contact && (
-                  <p className="text-sm text-gray-500">{cleaner.contact}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-xs font-mono bg-gray-100 text-gray-900 px-2 py-1 rounded">
-                  {cleaner.access_code}
-                </span>
-                <DeleteCleanerButton cleanerId={cleaner.id} cleanerName={cleaner.name} />
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              {cleaner.property_cleaners?.length
-                ? `Assigned to: ${cleaner.property_cleaners
-                    .map((pc) => (pc.properties as unknown as { name: string })?.name)
-                    .join(", ")}`
-                : "Not assigned to any property yet — assign from the property page."}
+        <div className="space-y-3 mt-8">
+          {cleaners?.length === 0 && (
+            <p className="text-gray-500 text-sm">
+              No cleaners added yet. Add one above, then assign them to properties.
             </p>
-          </div>
-        ))}
-      </div>
+          )}
+          {cleaners?.map((cleaner) => (
+            <div key={cleaner.id} className="border rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{cleaner.name}</p>
+                  {cleaner.contact && (
+                    <p className="text-sm text-gray-500">{cleaner.contact}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs font-mono bg-gray-100 text-gray-900 px-2 py-1 rounded">
+                    {cleaner.access_code}
+                  </span>
+                  <DeleteCleanerButton cleanerId={cleaner.id} cleanerName={cleaner.name} />
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                {cleaner.property_cleaners?.length
+                  ? `Assigned to: ${cleaner.property_cleaners
+                      .map((pc) => (pc.properties as unknown as { name: string })?.name)
+                      .join(", ")}`
+                  : "Not assigned to any property yet — assign from the property page."}
+              </p>
+            </div>
+          ))}
+        </div>
 
-      <p className="text-xs text-gray-400 mt-6">
-        Share each cleaner's access code with them once — they'll enter it the first
-        time they scan a QR code, and their device will remember it after that.
-      </p>
+        <p className="text-xs text-gray-400 mt-6">
+          Share each cleaner&apos;s access code with them once — they&apos;ll enter it the first
+          time they scan a QR code, and their device will remember it after that.
+        </p>
+      </div>
     </div>
   );
 }

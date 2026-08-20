@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import TurnoverRow from "./TurnoverRow";
 import TzHiddenInput from "./TzHiddenInput";
+import AppNav from "@/app/components/AppNav";
 
 const PAGE_SIZE = 20;
 const SUMMARY_CAP = 500;
@@ -245,16 +246,9 @@ export default async function HistoryPage({
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center justify-between">
-        <Link href="/dashboard" className="text-sm text-gray-500 underline">
-          &larr; Dashboard
-        </Link>
-        <form action="/api/auth/signout" method="post">
-          <button className="text-sm text-gray-500 underline">Log out</button>
-        </form>
-      </div>
-
+    <>
+      <AppNav current="/history" />
+      <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mt-2 mb-6">Turnover history</h1>
 
       <div className="grid grid-cols-3 gap-3 mb-6">
@@ -395,6 +389,7 @@ export default async function HistoryPage({
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
