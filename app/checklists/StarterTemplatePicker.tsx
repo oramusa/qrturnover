@@ -81,9 +81,11 @@ export default function StarterTemplatePicker() {
       </p>
       <div className="grid gap-3 sm:grid-cols-3">
         {STARTER_TEMPLATE_PACKS.map((pack) => (
-          <div key={pack.id} className="border rounded-lg p-4">
-            <p className="font-medium">{pack.name}</p>
-            <p className="text-xs text-gray-500 mt-1">{pack.description}</p>
+          <div key={pack.id} className="border rounded-lg p-4 flex flex-col">
+            <div className="flex-1">
+              <p className="font-medium">{pack.name}</p>
+              <p className="text-xs text-gray-500 mt-1">{pack.description}</p>
+            </div>
             <button
               type="button"
               onClick={() => applyPack(pack.id)}
