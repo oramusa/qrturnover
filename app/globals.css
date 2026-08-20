@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Reserve space for the scrollbar on every page, so switching between a
+     short page (no scrollbar) and a tall one (scrollbar present) doesn't
+     shift centered content — like the nav bar — sideways by a few pixels. */
+  scrollbar-gutter: stable;
 }
 
 @theme inline {
