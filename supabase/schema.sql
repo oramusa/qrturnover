@@ -508,3 +508,17 @@ create policy "hosts read scan event photos on own properties" on public.scan_ev
   );
 
 alter publication supabase_realtime add table public.scan_event_photos;
+
+-- ============================================================================
+-- PREVENT DUPLICATE ACTIVE TURNOVERS
+--
+-- Rapid repeated taps on "Start turnover" (the client's own guard against
+-- double-submission can lose the race on a slow/mobile tap) could create
+-- several in_progress sessions for the same property at once, leaving
+-- "which session is active" ambiguous everywhere that assumes there's one.
+-- Enforced here at the database level rather than relying on the client
+-- alone.
+-- ============================================================================
+
+create unique index if not exists idx_turnover_sessions_one_active_per_property
+  on public.turnover_sessions(property_id) where status = 'in_progress';

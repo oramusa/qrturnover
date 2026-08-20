@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,13 +14,36 @@ export default function StartTurnoverButton({
   activeSessionId?: string;
 }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // A ref, not state: state updates that gate the button's `disabled` prop
+  // aren't guaranteed to commit before a second rapid tap fires (especially
+  // on mobile), which is exactly how duplicate in_progress sessions got
+  // created. A ref is read/written synchronously, so it closes that gap.
+  const startingRef = useRef(false);
   const router = useRouter();
 
   async function startTurnover() {
+    if (startingRef.current) return;
+    startingRef.current = true;
     setLoading(true);
+    setError(null);
+
     const supabase = createClient();
-    await supabase.from("turnover_sessions").insert({ property_id: propertyId });
+    const { error: insertError } = await supabase
+      .from("turnover_sessions")
+      .insert({ property_id: propertyId });
+
+    startingRef.current = false;
     setLoading(false);
+
+    if (insertError) {
+      // A unique-turnover-per-property constraint violation just means
+      // another tap already started one — not a real failure.
+      if (insertError.code !== "23505") {
+        setError(insertError.message);
+        return;
+      }
+    }
     router.refresh();
   }
 
@@ -81,12 +104,15 @@ export default function StartTurnoverButton({
   }
 
   return (
-    <button
-      onClick={startTurnover}
-      disabled={loading}
-      className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
-    >
-      {loading ? "Starting..." : "Start turnover"}
-    </button>
+    <div>
+      <button
+        onClick={startTurnover}
+        disabled={loading}
+        className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
+      >
+        {loading ? "Starting..." : "Start turnover"}
+      </button>
+      {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+    </div>
   );
 }
