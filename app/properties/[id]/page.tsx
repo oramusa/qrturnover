@@ -8,6 +8,7 @@ import DeleteZoneButton from "./DeleteZoneButton";
 import DeletePropertyButton from "./DeletePropertyButton";
 import ZoneChecklist from "./ZoneChecklist";
 import LocalTime from "./LocalTime";
+import AppNav from "@/app/components/AppNav";
 
 function formatDuration(startedAt: string | null, finishedAt: string | null) {
   if (!startedAt || !finishedAt) return null;
@@ -100,16 +101,9 @@ export default async function PropertyPage({
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center justify-between">
-        <Link href="/dashboard" className="text-sm text-gray-500 underline">
-          &larr; All properties
-        </Link>
-        <form action="/api/auth/signout" method="post">
-          <button className="text-sm text-gray-500 underline">Log out</button>
-        </form>
-      </div>
-
+    <>
+      <AppNav />
+      <div className="max-w-3xl mx-auto p-6">
       <div className="flex items-center justify-between mt-2 mb-6">
         <div>
           <h1 className="text-2xl font-semibold">{property.name}</h1>
@@ -303,6 +297,7 @@ export default async function PropertyPage({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

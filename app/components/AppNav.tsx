@@ -10,7 +10,7 @@ const NAV_ITEMS = [
 export default function AppNav({
   current,
 }: {
-  current: (typeof NAV_ITEMS)[number]["href"];
+  current?: (typeof NAV_ITEMS)[number]["href"];
 }) {
   return (
     <header className="border-b border-gray-800">
