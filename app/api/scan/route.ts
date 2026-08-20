@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const zoneSlug = formData.get("zoneSlug") as string | null;
   const sessionId = formData.get("sessionId") as string | null;
   const cleanerId = formData.get("cleanerId") as string | null;
-  const photo = formData.get("photo") as File | null;
+  const photos = formData.getAll("photos").filter((p): p is File => p instanceof File && p.size > 0);
 
   if (!setId || !zoneSlug || !sessionId) {
     return NextResponse.json({ error: "Missing setId, zoneSlug, or sessionId" }, { status: 400 });
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     .eq("zone_slug", zoneSlug)
     .maybeSingle();
 
-  if (zoneSettings?.require_photo && (!photo || photo.size === 0)) {
+  if (zoneSettings?.require_photo && photos.length === 0) {
     return NextResponse.json(
       { error: "This zone requires a photo before it can be marked done" },
       { status: 400 }
@@ -89,35 +89,53 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  let photoUrl: string | null = null;
-  if (photo && photo.size > 0) {
-    const ext = photo.name.split(".").pop() || "jpg";
-    const path = `${sessionId}/${zoneSlug}-${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
-      .from("scan-photos")
-      .upload(path, photo, { contentType: photo.type });
+  // Upsert so re-scanning the same zone just updates the timestamp instead of erroring.
+  // Photos always accumulate in scan_event_photos below, regardless of how many
+  // times this zone gets scanned in the same session.
+  const { data: scanEvent, error } = await supabase
+    .from("scan_events")
+    .upsert(
+      {
+        session_id: sessionId,
+        property_id: propertyId,
+        zone_slug: zoneSlug,
+        cleaner_id: cleanerId || null,
+        scanned_at: new Date().toISOString(),
+      },
+      { onConflict: "session_id,zone_slug" }
+    )
+    .select("id")
+    .single();
 
-    if (!uploadError) {
-      const { data: publicUrl } = supabase.storage.from("scan-photos").getPublicUrl(path);
-      photoUrl = publicUrl.publicUrl;
-    }
+  if (error || !scanEvent) {
+    return NextResponse.json({ error: error?.message ?? "Couldn't save the scan" }, { status: 500 });
   }
 
-  // Upsert so re-scanning the same zone just updates the timestamp/photo instead of erroring
-  const { error } = await supabase.from("scan_events").upsert(
-    {
-      session_id: sessionId,
-      property_id: propertyId,
-      zone_slug: zoneSlug,
-      cleaner_id: cleanerId || null,
-      scanned_at: new Date().toISOString(),
-      photo_url: photoUrl,
-    },
-    { onConflict: "session_id,zone_slug" }
-  );
+  if (photos.length > 0) {
+    const uploadedUrls: string[] = [];
+    for (const photo of photos) {
+      const ext = photo.name.split(".").pop() || "jpg";
+      const path = `${sessionId}/${zoneSlug}-${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("scan-photos")
+        .upload(path, photo, { contentType: photo.type });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+      if (uploadError) {
+        return NextResponse.json(
+          { error: `Couldn't upload a photo: ${uploadError.message}` },
+          { status: 500 }
+        );
+      }
+      const { data: publicUrl } = supabase.storage.from("scan-photos").getPublicUrl(path);
+      uploadedUrls.push(publicUrl.publicUrl);
+    }
+
+    const { error: photoInsertError } = await supabase.from("scan_event_photos").insert(
+      uploadedUrls.map((photo_url) => ({ scan_event_id: scanEvent.id, photo_url }))
+    );
+    if (photoInsertError) {
+      return NextResponse.json({ error: photoInsertError.message }, { status: 500 });
+    }
   }
 
   // Best-effort per-zone notification — never blocks the cleaner's flow if it fails.

@@ -11,7 +11,7 @@ type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] 
 type ScanRecord = {
   zone_slug: string;
   scanned_at: string;
-  photo_url: string | null;
+  scan_event_photos: { photo_url: string }[];
   cleaners: { name: string } | null;
 };
 
@@ -127,13 +127,19 @@ export default function TurnoverRow({
                     ))}
                   </ul>
                 )}
-                {scan?.photo_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={scan.photo_url}
-                    alt={`${zone.name} photo`}
-                    className="w-14 h-14 rounded object-cover border mt-1.5"
-                  />
+                {scan && scan.scan_event_photos.length > 0 && (
+                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                    {scan.scan_event_photos.map((p, i) => (
+                      <a key={i} href={p.photo_url} target="_blank" rel="noopener noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={p.photo_url}
+                          alt={`${zone.name} photo ${i + 1}`}
+                          className="w-14 h-14 rounded object-cover border"
+                        />
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
             );

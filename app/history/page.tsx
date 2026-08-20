@@ -12,7 +12,7 @@ type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] 
 type ScanEvent = {
   zone_slug: string;
   scanned_at: string;
-  photo_url: string | null;
+  scan_event_photos: { photo_url: string }[];
   cleaners: { name: string } | null;
 };
 
@@ -237,7 +237,7 @@ export default async function HistoryPage({
          properties ( id, name ),
          cleaners ( name ),
          scan_item_completions ( item_id ),
-         scan_events ( zone_slug, scanned_at, photo_url, cleaners ( name ) )`,
+         scan_events ( zone_slug, scanned_at, cleaners ( name ), scan_event_photos ( photo_url ) )`,
         { count: "exact" }
       )
       .eq("status", "complete")

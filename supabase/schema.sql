@@ -474,3 +474,37 @@ create trigger trg_release_qr_set_on_property_delete
 -- it referenced was just dropped).
 alter publication supabase_realtime add table public.scan_events;
 alter publication supabase_realtime add table public.zone_checklist_items;
+
+-- ============================================================================
+-- MULTIPLE PHOTOS PER ZONE SCAN
+--
+-- scan_events.photo_url only ever held one photo, so re-scanning a zone (or
+-- attaching more than one photo at once) silently discarded everything but
+-- the last upload. Moves photos to their own table: as many as a cleaner
+-- attaches are kept, none replace each other.
+-- ============================================================================
+
+alter table public.scan_events drop column if exists photo_url;
+
+create table if not exists public.scan_event_photos (
+  id uuid primary key default gen_random_uuid(),
+  scan_event_id uuid not null references public.scan_events(id) on delete cascade,
+  photo_url text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_scan_event_photos_scan_event on public.scan_event_photos(scan_event_id);
+
+alter table public.scan_event_photos enable row level security;
+
+drop policy if exists "hosts read scan event photos on own properties" on public.scan_event_photos;
+create policy "hosts read scan event photos on own properties" on public.scan_event_photos
+  for select using (
+    exists (
+      select 1 from public.scan_events se
+      join public.properties p on p.id = se.property_id
+      where se.id = scan_event_photos.scan_event_id and p.host_id = auth.uid()
+    )
+  );
+
+alter publication supabase_realtime add table public.scan_event_photos;

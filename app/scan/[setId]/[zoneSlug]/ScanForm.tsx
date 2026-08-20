@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -22,15 +22,32 @@ export default function ScanForm({
   otherZones: { slug: string; name: string; done: boolean }[];
 }) {
   const router = useRouter();
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  const previewUrls = useMemo(() => photos.map((p) => URL.createObjectURL(p)), [photos]);
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
+  function addPhotos(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setPhotos((prev) => [...prev, ...Array.from(files)]);
+    setError(null);
+  }
+
+  function removePhoto(index: number) {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (requirePhoto && !photo) {
-      setError("A photo is required for this zone before you can mark it done.");
+    if (requirePhoto && photos.length === 0) {
+      setError("At least one photo is required for this zone before you can mark it done.");
       return;
     }
 
@@ -42,11 +59,17 @@ export default function ScanForm({
     formData.append("zoneSlug", zoneSlug);
     formData.append("sessionId", sessionId);
     formData.append("cleanerId", cleanerId);
-    if (photo) formData.append("photo", photo);
+    photos.forEach((photo) => formData.append("photos", photo));
 
     const res = await fetch("/api/scan", { method: "POST", body: formData });
 
-    setStatus(res.ok ? "done" : "error");
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Something went wrong — try again.");
+      setStatus("error");
+      return;
+    }
+    setStatus("done");
   }
 
   if (status === "done") {
@@ -91,19 +114,43 @@ export default function ScanForm({
     <form onSubmit={handleSubmit} className="mt-6 space-y-3">
       <label className="block">
         <span className="text-sm text-gray-500">
-          {requirePhoto ? "Add a photo (required for this zone)" : "Add a photo (optional)"}
+          {requirePhoto ? "Add photos (at least one required for this zone)" : "Add photos (optional)"}
         </span>
         <input
           type="file"
           accept="image/*"
           capture="environment"
           onChange={(e) => {
-            setPhoto(e.target.files?.[0] ?? null);
-            setError(null);
+            addPhotos(e.target.files);
+            e.target.value = "";
           }}
           className="block w-full text-sm mt-1"
         />
       </label>
+
+      {photos.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {previewUrls.map((url, i) => (
+            <div key={i} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt={`Photo ${i + 1}`}
+                className="w-16 h-16 rounded object-cover border"
+              />
+              <button
+                type="button"
+                onClick={() => removePhoto(i)}
+                aria-label={`Remove photo ${i + 1}`}
+                className="absolute -top-2 -right-2 bg-black text-white rounded-full w-5 h-5 text-xs leading-none flex items-center justify-center"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {!allItemsChecked && (
         <p className="text-xs text-amber-700">Check off every item above before marking this zone done.</p>
       )}
@@ -115,9 +162,6 @@ export default function ScanForm({
       >
         {status === "submitting" ? "Submitting..." : "Mark done"}
       </button>
-      {status === "error" && (
-        <p className="text-red-600 text-sm">Something went wrong — try again.</p>
-      )}
     </form>
   );
 }
