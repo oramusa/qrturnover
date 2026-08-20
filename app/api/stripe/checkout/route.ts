@@ -4,8 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-// Creates a Stripe Checkout session for the logged-in host to start their subscription.
-// Wire a "Subscribe" button on the dashboard to POST here.
+// Creates an embedded Stripe Checkout session for the logged-in host to start
+// their subscription. Embedded (vs. hosted) mode keeps the payment form on
+// our own page instead of redirecting to a stripe.com URL — the client
+// mounts it via the returned client_secret and @stripe/stripe-js.
 export async function POST() {
   const supabase = await createClient();
   const {
@@ -32,14 +34,14 @@ export async function POST() {
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
+    ui_mode: "embedded",
     ...(host?.stripe_customer_id
       ? { customer: host.stripe_customer_id }
       : { customer_email: user.email }),
     line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=cancelled`,
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?checkout=success`,
     metadata: { host_id: user.id },
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ clientSecret: session.client_secret });
 }

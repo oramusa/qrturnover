@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function BillingCard({
   subscriptionStatus,
@@ -12,19 +13,14 @@ export default function BillingCard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function redirectTo(path: string) {
+  async function goToPortal() {
     setLoading(true);
     setError(null);
-    const res = await fetch(path, { method: "POST" });
+    const res = await fetch("/api/stripe/portal", { method: "POST" });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    if (!res.ok || !body.url) {
       setLoading(false);
       setError(body.error || "Something went wrong. Please try again.");
-      return;
-    }
-    if (!body.url) {
-      setLoading(false);
-      setError("Something went wrong. Please try again.");
       return;
     }
     window.location.href = body.url;
@@ -33,7 +29,7 @@ export default function BillingCard({
   const isActive = subscriptionStatus === "active";
   const isPastDue = subscriptionStatus === "past_due";
   const needsAttention = isPastDue || subscriptionStatus === "canceled";
-  const goToPortal = isActive || isPastDue;
+  const managingExisting = isActive || isPastDue;
 
   return (
     <div className="border rounded-lg p-4 mb-6 flex items-center justify-between gap-4">
@@ -58,19 +54,22 @@ export default function BillingCard({
           )}
         {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
       </div>
-      <button
-        onClick={() => redirectTo(goToPortal ? "/api/stripe/portal" : "/api/stripe/checkout")}
-        disabled={loading}
-        className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 shrink-0"
-      >
-        {loading
-          ? "Loading..."
-          : isActive
-          ? "Manage subscription"
-          : isPastDue
-          ? "Update payment method"
-          : "Subscribe"}
-      </button>
+      {managingExisting ? (
+        <button
+          onClick={goToPortal}
+          disabled={loading}
+          className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 shrink-0"
+        >
+          {loading ? "Loading..." : isPastDue ? "Update payment method" : "Manage subscription"}
+        </button>
+      ) : (
+        <Link
+          href="/account/subscribe"
+          className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 shrink-0"
+        >
+          Subscribe
+        </Link>
+      )}
     </div>
   );
 }

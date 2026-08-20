@@ -2,7 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/app/components/AppNav";
 import BillingCard from "@/app/dashboard/BillingCard";
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -33,6 +38,13 @@ export default async function AccountPage() {
       <AppNav current="/account" />
       <div className="max-w-2xl mx-auto p-6">
         <h1 className="text-2xl font-semibold mb-6">Account</h1>
+
+        {params.checkout === "success" && (
+          <p className="text-sm bg-green-50 text-green-800 rounded p-3 mb-6">
+            Payment successful — thanks for subscribing! It may take a moment for your status
+            below to update.
+          </p>
+        )}
 
         <div className="border rounded-lg p-4 mb-6">
           <p className="text-xs text-gray-500">Email</p>
