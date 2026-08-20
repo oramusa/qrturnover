@@ -25,7 +25,7 @@ export default function AppNav({
               href={item.href}
               className={`px-3 py-1.5 rounded-md transition-colors ${
                 current === item.href
-                  ? "bg-white text-gray-900 font-medium"
+                  ? "bg-white text-gray-900"
                   : "text-gray-400 hover:text-white"
               }`}
             >
