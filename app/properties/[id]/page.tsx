@@ -175,7 +175,14 @@ export default async function PropertyPage({
 
       <div className="flex items-center justify-between mt-8 mb-3">
         <h2 className="text-lg font-medium">Zones</h2>
-        {setId && <span className="text-xs text-gray-400">QR set: {setId}</span>}
+        {setId && (
+          <span className="flex items-center gap-1.5 text-xs text-gray-400">
+            QR set
+            <span className="font-mono bg-gray-100 text-gray-900 px-2 py-0.5 rounded-full">
+              {setId}
+            </span>
+          </span>
+        )}
       </div>
 
       {activeSession && (
