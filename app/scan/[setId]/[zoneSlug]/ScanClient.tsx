@@ -15,6 +15,7 @@ type SessionData = {
   };
   cleaner: { id: string; name: string } | null;
   activeSession: { id: string; job_started_at: string | null; job_finished_at: string | null } | null;
+  lastTurnoverJustFinished: boolean;
   otherZones: { slug: string; name: string; done: boolean }[];
 };
 
@@ -90,7 +91,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
     return <div className="max-w-sm mx-auto p-6 mt-16 text-center text-gray-500">Loading…</div>;
   }
 
-  const { zone, cleaner, activeSession } = data;
+  const { zone, cleaner, activeSession, lastTurnoverJustFinished } = data;
 
   if (!cleaner) {
     return (
@@ -175,8 +176,14 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
 
       {!activeSession ? (
         <p className="mt-6 text-sm text-amber-700 bg-amber-50 rounded p-3">
-          No turnover has been started for this property yet. Ask your host to tap
-          &quot;Start turnover&quot; in the app, then scan again.
+          {lastTurnoverJustFinished
+            ? "This turnover is already finished — thanks! Your host will start the next one before the next guest."
+            : (
+              <>
+                No turnover has been started for this property yet. Ask your host to tap
+                &quot;Start turnover&quot; in the app, then scan again.
+              </>
+            )}
         </p>
       ) : (
         <>

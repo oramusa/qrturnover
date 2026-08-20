@@ -76,6 +76,21 @@ export async function GET(req: NextRequest) {
     .limit(1)
     .maybeSingle();
 
+  // No active session doesn't always mean "never started" — distinguish a
+  // property that just finished its last turnover from one that's never had
+  // one, so the cleaner's screen doesn't imply nothing happened yet.
+  let lastTurnoverJustFinished = false;
+  if (!activeSession) {
+    const { data: lastSession } = await supabase
+      .from("turnover_sessions")
+      .select("status")
+      .eq("property_id", propertyId)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    lastTurnoverJustFinished = lastSession?.status === "complete";
+  }
+
   const { data: checklistItems } = await supabase
     .from("zone_checklist_items")
     .select("id, label, sort_order")
@@ -134,6 +149,7 @@ export async function GET(req: NextRequest) {
     // (e.g. from a different host's zone) — treat it as logged out.
     cleaner: cleanerId && cleanerName ? { id: cleanerId, name: cleanerName } : null,
     activeSession: activeSession ?? null,
+    lastTurnoverJustFinished,
     otherZones,
   });
 }
