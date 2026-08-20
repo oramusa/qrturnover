@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { href: "/cleaners", label: "Cleaners" },
   { href: "/checklists", label: "Checklists" },
   { href: "/history", label: "History" },
+  { href: "/account", label: "Account" },
 ] as const;
 
 export default function AppNav({

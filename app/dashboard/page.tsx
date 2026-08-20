@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import NewPropertyForm from "./NewPropertyForm";
-import BillingCard from "./BillingCard";
 import AppNav from "@/app/components/AppNav";
 
 export default async function DashboardPage() {
@@ -9,26 +8,6 @@ export default async function DashboardPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { data: host, error: hostError } = await supabase
-    .from("hosts")
-    .select("subscription_status, trial_ends_at")
-    .eq("id", user!.id)
-    .single();
-
-  if (hostError) {
-    console.error("Failed to load host billing info:", hostError);
-  }
-
-  const trialDaysLeft = host?.trial_ends_at
-    ? Math.max(
-        0,
-        Math.ceil(
-          (new Date(host.trial_ends_at).getTime() - Date.now()) /
-            (1000 * 60 * 60 * 24)
-        )
-      )
-    : null;
 
   const { data: properties } = await supabase
     .from("properties")
@@ -47,11 +26,6 @@ export default async function DashboardPage() {
       <AppNav current="/dashboard" />
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-2xl font-semibold mb-8">Your properties</h1>
-
-        <BillingCard
-          subscriptionStatus={host?.subscription_status ?? null}
-          trialDaysLeft={trialDaysLeft}
-        />
 
         <NewPropertyForm />
 
