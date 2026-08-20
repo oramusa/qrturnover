@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import TurnoverRow from "./TurnoverRow";
-import { InlineScript } from "@/app/components/InlineScript";
+import TzHiddenInput from "./TzHiddenInput";
 
 const PAGE_SIZE = 20;
 const SUMMARY_CAP = 500;
@@ -280,10 +280,7 @@ export default async function HistoryPage({
       )}
 
       <form method="get" className="border rounded-lg p-4 mb-6 grid gap-3 sm:grid-cols-4">
-        <input type="hidden" name="tz" id="history-tz-input" defaultValue={params.tz ?? ""} />
-        <InlineScript
-          html={`{var n=document.getElementById("history-tz-input");if(n)n.value=Intl.DateTimeFormat().resolvedOptions().timeZone}`}
-        />
+        <TzHiddenInput defaultValue={params.tz ?? ""} />
         <label className="block">
           <span className="text-xs text-gray-500">Property</span>
           <select
