@@ -7,9 +7,9 @@ import { createClient } from "@/lib/supabase/client";
 import LocalTime from "@/app/properties/[id]/LocalTime";
 
 type ChecklistItem = { id: string; label: string };
-type Zone = { id: string; name: string; zone_checklist_items: ChecklistItem[] };
+type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] };
 type ScanRecord = {
-  zone_id: string;
+  zone_slug: string;
   scanned_at: string;
   photo_url: string | null;
   cleaners: { name: string } | null;
@@ -41,7 +41,7 @@ export default function TurnoverRow({
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
-  const scanByZone = new Map(scanRecords.map((r) => [r.zone_id, r]));
+  const scanByZone = new Map(scanRecords.map((r) => [r.zone_slug, r]));
 
   async function handleDelete() {
     if (
@@ -97,9 +97,9 @@ export default function TurnoverRow({
       {open && (
         <div className="border-t px-4 py-3 space-y-3">
           {zones.map((zone) => {
-            const scan = scanByZone.get(zone.id);
+            const scan = scanByZone.get(zone.slug);
             return (
-              <div key={zone.id}>
+              <div key={zone.slug}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-medium text-xs">{zone.name}</p>
                   <span

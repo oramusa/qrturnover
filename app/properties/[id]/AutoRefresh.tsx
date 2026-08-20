@@ -32,7 +32,7 @@ export default function AutoRefresh({
       .channel(`turnover-session-${sessionId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "scan_records", filter: `session_id=eq.${sessionId}` },
+        { event: "*", schema: "public", table: "scan_events", filter: `session_id=eq.${sessionId}` },
         () => router.refresh()
       )
       .on(

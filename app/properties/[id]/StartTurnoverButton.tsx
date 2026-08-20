@@ -28,16 +28,25 @@ export default function StartTurnoverButton({
     const supabase = createClient();
 
     if (activeSessionId) {
+      const { data: claim } = await supabase
+        .from("property_set_claims")
+        .select("set_id")
+        .eq("property_id", propertyId)
+        .is("released_at", null)
+        .maybeSingle();
+
       const [{ data: zones }, { data: scans }] = await Promise.all([
-        supabase.from("zones").select("id, name").eq("property_id", propertyId),
-        supabase.from("scan_records").select("zone_id").eq("session_id", activeSessionId),
+        claim
+          ? supabase.from("qr_set_zones").select("zone_slug, zone_label").eq("set_id", claim.set_id)
+          : Promise.resolve({ data: [] as { zone_slug: string; zone_label: string }[] }),
+        supabase.from("scan_events").select("zone_slug").eq("session_id", activeSessionId),
       ]);
-      const scannedIds = new Set((scans ?? []).map((s) => s.zone_id));
-      const pending = (zones ?? []).filter((z) => !scannedIds.has(z.id));
+      const scannedSlugs = new Set((scans ?? []).map((s) => s.zone_slug));
+      const pending = (zones ?? []).filter((z) => !scannedSlugs.has(z.zone_slug));
       if (pending.length > 0) {
         const proceed = confirm(
           `${pending.length} zone${pending.length === 1 ? "" : "s"} not yet scanned: ${pending
-            .map((z) => z.name)
+            .map((z) => z.zone_label)
             .join(", ")}.\n\nMark this turnover complete anyway?`
         );
         if (!proceed) return;
@@ -58,7 +67,7 @@ export default function StartTurnoverButton({
     return (
       <div className="flex items-center gap-3">
         <span className="text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded">
-          Turnover in progress — share the property's scan links or printed QR codes with your cleaner.
+          Turnover in progress — share the property&apos;s scan links or printed QR codes with your cleaner.
         </span>
         <button
           onClick={completeTurnover}

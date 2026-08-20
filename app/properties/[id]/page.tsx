@@ -1,10 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import ZoneManager from "./ZoneManager";
 import StartTurnoverButton from "./StartTurnoverButton";
 import CleanerAssignment from "./CleanerAssignment";
 import AutoRefresh from "./AutoRefresh";
-import DeleteZoneButton from "./DeleteZoneButton";
 import DeletePropertyButton from "./DeletePropertyButton";
 import ZoneChecklist from "./ZoneChecklist";
 import LocalTime from "./LocalTime";
@@ -36,13 +34,49 @@ export default async function PropertyPage({
     .eq("id", id)
     .single();
 
-  const { data: zones } = await supabase
-    .from("zones")
-    .select(
-      "id, name, task_description, checklist_items, require_photo, sort_order, zone_checklist_items ( id, label, sort_order )"
-    )
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("set_id")
+    .eq("property_id", id)
+    .is("released_at", null)
+    .maybeSingle();
+
+  const setId = claim?.set_id ?? null;
+
+  const { data: setZones } = setId
+    ? await supabase
+        .from("qr_set_zones")
+        .select("zone_slug, zone_label, sort_order")
+        .eq("set_id", setId)
+        .order("sort_order", { ascending: true })
+    : { data: [] as { zone_slug: string; zone_label: string; sort_order: number }[] };
+
+  const { data: zoneSettingsRows } = await supabase
+    .from("property_zone_settings")
+    .select("zone_slug, task_description, require_photo")
+    .eq("property_id", id);
+  const settingsBySlug = new Map((zoneSettingsRows ?? []).map((s) => [s.zone_slug, s]));
+
+  const { data: checklistItemRows } = await supabase
+    .from("zone_checklist_items")
+    .select("id, zone_slug, label, sort_order")
     .eq("property_id", id)
     .order("sort_order", { ascending: true });
+  const checklistBySlug = new Map<string, { id: string; label: string; sort_order: number }[]>();
+  for (const item of checklistItemRows ?? []) {
+    const arr = checklistBySlug.get(item.zone_slug) ?? [];
+    arr.push({ id: item.id, label: item.label, sort_order: item.sort_order });
+    checklistBySlug.set(item.zone_slug, arr);
+  }
+
+  const zones = (setZones ?? []).map((z) => ({
+    slug: z.zone_slug,
+    name: z.zone_label,
+    task_description: settingsBySlug.get(z.zone_slug)?.task_description ?? null,
+    require_photo: settingsBySlug.get(z.zone_slug)?.require_photo ?? false,
+    zone_checklist_items: checklistBySlug.get(z.zone_slug) ?? [],
+  }));
+  const zoneLabelBySlug = new Map(zones.map((z) => [z.slug, z.name]));
 
   // All cleaners on this host's roster, and which are assigned to this property
   const { data: allCleaners } = await supabase
@@ -57,13 +91,13 @@ export default async function PropertyPage({
 
   const assignedIds = new Set(assignments?.map((a) => a.cleaner_id) ?? []);
 
-  // Recent turnover sessions (active + history), with cleaner name + scan records
+  // Recent turnover sessions (active + history), with cleaner name + scan events
   const { data: sessions } = await supabase
     .from("turnover_sessions")
     .select(
       `id, status, started_at, completed_at, job_started_at, job_finished_at,
        cleaners ( name ),
-       scan_records ( zone_id, scanned_at, photo_url, cleaners ( name ), zones ( name ) )`
+       scan_events ( zone_slug, scanned_at, photo_url, cleaners ( name ) )`
     )
     .eq("property_id", id)
     .order("started_at", { ascending: false })
@@ -71,21 +105,21 @@ export default async function PropertyPage({
 
   const activeSession = sessions?.find((s) => s.status === "in_progress");
   const history = sessions?.filter((s) => s.status !== "in_progress") ?? [];
-  const scannedZoneIds = new Set(
-    activeSession?.scan_records?.map((r) => r.zone_id) ?? []
+  const scannedZoneSlugs = new Set(
+    activeSession?.scan_events?.map((r) => r.zone_slug) ?? []
   );
   const activePhotoByZone = new Map(
-    (activeSession?.scan_records ?? [])
+    (activeSession?.scan_events ?? [])
       .filter((r) => r.photo_url)
-      .map((r) => [r.zone_id, r.photo_url as string])
+      .map((r) => [r.zone_slug, r.photo_url as string])
   );
   const activeScannedAtByZone = new Map(
-    (activeSession?.scan_records ?? []).map((r) => [r.zone_id, r.scanned_at as string])
+    (activeSession?.scan_events ?? []).map((r) => [r.zone_slug, r.scanned_at as string])
   );
   const activeCleanerByZone = new Map(
-    (activeSession?.scan_records ?? [])
+    (activeSession?.scan_events ?? [])
       .filter((r) => r.cleaners)
-      .map((r) => [r.zone_id, (r.cleaners as unknown as { name: string }).name])
+      .map((r) => [r.zone_slug, (r.cleaners as unknown as { name: string }).name])
   );
 
   const { data: itemCompletions } = activeSession
@@ -139,7 +173,10 @@ export default async function PropertyPage({
         </p>
       )}
 
-      <h2 className="text-lg font-medium mt-8 mb-3">Zones</h2>
+      <div className="flex items-center justify-between mt-8 mb-3">
+        <h2 className="text-lg font-medium">Zones</h2>
+        {setId && <span className="text-xs text-gray-400">QR set: {setId}</span>}
+      </div>
 
       {activeSession && (
         <p className="text-sm text-gray-500 mb-3">
@@ -148,13 +185,13 @@ export default async function PropertyPage({
       )}
 
       <div className="space-y-2 mb-6">
-        {zones?.map((zone) => {
-          const done = !!activeSession && scannedZoneIds.has(zone.id);
-          const photoUrl = activePhotoByZone.get(zone.id);
-          const scannedAt = activeScannedAtByZone.get(zone.id);
-          const scannedBy = activeCleanerByZone.get(zone.id);
+        {zones.map((zone) => {
+          const done = !!activeSession && scannedZoneSlugs.has(zone.slug);
+          const photoUrl = activePhotoByZone.get(zone.slug);
+          const scannedAt = activeScannedAtByZone.get(zone.slug);
+          const scannedBy = activeCleanerByZone.get(zone.slug);
           return (
-            <div key={zone.id} className="border rounded-lg px-4 py-3">
+            <div key={zone.slug} className="border rounded-lg px-4 py-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   {photoUrl && (
@@ -200,34 +237,33 @@ export default async function PropertyPage({
                           "Pending"
                         )}
                       </span>
-                      {(zone.zone_checklist_items?.length ?? 0) > 0 && (
+                      {zone.zone_checklist_items.length > 0 && (
                         <span className="text-xs text-gray-400">
-                          {zone.zone_checklist_items!.filter((i) => completedItemIds.has(i.id)).length}/
-                          {zone.zone_checklist_items!.length} items
+                          {zone.zone_checklist_items.filter((i) => completedItemIds.has(i.id)).length}/
+                          {zone.zone_checklist_items.length} items
                         </span>
                       )}
                     </>
                   )}
-                  <DeleteZoneButton zoneId={zone.id} zoneName={zone.name} />
                 </div>
               </div>
               <ZoneChecklist
-                zoneId={zone.id}
+                propertyId={id}
+                zoneSlug={zone.slug}
                 zoneName={zone.name}
-                items={(zone.zone_checklist_items ?? [])
-                  .slice()
-                  .sort((a, b) => a.sort_order - b.sort_order)
-                  .map((i) => ({ id: i.id, label: i.label, sort_order: i.sort_order }))}
+                items={zone.zone_checklist_items}
               />
             </div>
           );
         })}
-        {zones?.length === 0 && (
-          <p className="text-gray-500 text-sm">No zones yet — add your first one below.</p>
+        {zones.length === 0 && (
+          <p className="text-gray-500 text-sm">
+            {setId
+              ? "This QR set has no zones defined."
+              : "No QR set claimed for this property yet."}
+          </p>
         )}
       </div>
-
-      <ZoneManager propertyId={id} />
 
       <div className="border-t mt-8 pt-6">
         <div className="flex items-center justify-between mb-3">
@@ -255,7 +291,7 @@ export default async function PropertyPage({
             {history.map((s) => {
               const duration = formatDuration(s.job_started_at, s.job_finished_at);
               const cleanerName = (s.cleaners as unknown as { name: string } | null)?.name;
-              const photos = (s.scan_records ?? []).filter((r) => r.photo_url);
+              const photos = (s.scan_events ?? []).filter((r) => r.photo_url);
               return (
                 <div key={s.id} className="border rounded-lg px-4 py-3 text-sm">
                   <div className="flex items-center justify-between">
@@ -283,8 +319,8 @@ export default async function PropertyPage({
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={p.photo_url!}
-                            alt={`${(p.zones as unknown as { name: string } | null)?.name ?? "Zone"} photo`}
-                            title={(p.zones as unknown as { name: string } | null)?.name}
+                            alt={`${zoneLabelBySlug.get(p.zone_slug) ?? p.zone_slug} photo`}
+                            title={zoneLabelBySlug.get(p.zone_slug) ?? p.zone_slug}
                             className="w-14 h-14 rounded object-cover border"
                           />
                         </a>

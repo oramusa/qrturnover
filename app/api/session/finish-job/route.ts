@@ -31,24 +31,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { data: zones } = await supabase
-    .from("zones")
-    .select("id, name")
-    .eq("property_id", session.property_id);
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("set_id")
+    .eq("property_id", session.property_id)
+    .is("released_at", null)
+    .maybeSingle();
+
+  const { data: zones } = claim
+    ? await supabase.from("qr_set_zones").select("zone_slug, zone_label").eq("set_id", claim.set_id)
+    : { data: [] as { zone_slug: string; zone_label: string }[] };
 
   const { data: scans } = await supabase
-    .from("scan_records")
-    .select("zone_id")
+    .from("scan_events")
+    .select("zone_slug")
     .eq("session_id", sessionId);
 
-  const scannedZoneIds = new Set((scans ?? []).map((s) => s.zone_id));
-  const pendingZones = (zones ?? []).filter((z) => !scannedZoneIds.has(z.id));
+  const scannedZoneSlugs = new Set((scans ?? []).map((s) => s.zone_slug));
+  const pendingZones = (zones ?? []).filter((z) => !scannedZoneSlugs.has(z.zone_slug));
 
   if (pendingZones.length > 0) {
     return NextResponse.json(
       {
         error: `${pendingZones.length} zone${pendingZones.length === 1 ? "" : "s"} still pending: ${pendingZones
-          .map((z) => z.name)
+          .map((z) => z.zone_label)
           .join(", ")}`,
       },
       { status: 400 }

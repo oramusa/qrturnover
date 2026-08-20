@@ -14,12 +14,34 @@ export default async function DashboardPage() {
     .select(
       `
       id, name, address,
-      zones ( id ),
       turnover_sessions ( id, status, started_at )
     `
     )
     .eq("host_id", user!.id)
     .order("created_at", { ascending: false });
+
+  const propertyIds = (properties ?? []).map((p) => p.id);
+  const { data: claims } =
+    propertyIds.length > 0
+      ? await supabase
+          .from("property_set_claims")
+          .select("property_id, set_id")
+          .in("property_id", propertyIds)
+          .is("released_at", null)
+      : { data: [] as { property_id: string; set_id: string }[] };
+
+  const setIdByProperty = new Map((claims ?? []).map((c) => [c.property_id, c.set_id]));
+  const setIds = Array.from(new Set((claims ?? []).map((c) => c.set_id)));
+
+  const { data: zoneRows } =
+    setIds.length > 0
+      ? await supabase.from("qr_set_zones").select("set_id").in("set_id", setIds)
+      : { data: [] as { set_id: string }[] };
+
+  const zoneCountBySet = new Map<string, number>();
+  for (const row of zoneRows ?? []) {
+    zoneCountBySet.set(row.set_id, (zoneCountBySet.get(row.set_id) ?? 0) + 1);
+  }
 
   return (
     <div>
@@ -37,7 +59,8 @@ export default async function DashboardPage() {
           )}
 
           {properties?.map((property) => {
-            const zoneCount = property.zones?.length ?? 0;
+            const propertySetId = setIdByProperty.get(property.id);
+            const zoneCount = propertySetId ? zoneCountBySet.get(propertySetId) ?? 0 : 0;
             const activeSession = property.turnover_sessions?.find(
               (s) => s.status === "in_progress"
             );

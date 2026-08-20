@@ -6,7 +6,7 @@ import ScanForm from "./ScanForm";
 
 type SessionData = {
   zone: {
-    id: string;
+    slug: string;
     name: string;
     task_description: string | null;
     checklist: { id: string; label: string; completed: boolean }[];
@@ -15,10 +15,10 @@ type SessionData = {
   };
   cleaner: { id: string; name: string } | null;
   activeSession: { id: string; job_started_at: string | null; job_finished_at: string | null } | null;
-  otherZones: { id: string; name: string; done: boolean }[];
+  otherZones: { slug: string; name: string; done: boolean }[];
 };
 
-export default function ScanClient({ zoneId }: { zoneId: string }) {
+export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlug: string }) {
   const [data, setData] = useState<SessionData | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [code, setCode] = useState("");
@@ -29,8 +29,8 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
   async function load() {
     const cleanerId = localStorage.getItem("cleaner_id");
     const url = cleanerId
-      ? `/api/scan-session?zoneId=${zoneId}&cleanerId=${cleanerId}`
-      : `/api/scan-session?zoneId=${zoneId}`;
+      ? `/api/scan-session?setId=${setId}&zoneSlug=${zoneSlug}&cleanerId=${cleanerId}`
+      : `/api/scan-session?setId=${setId}&zoneSlug=${zoneSlug}`;
     const res = await fetch(url);
     if (!res.ok) {
       setLoadError(true);
@@ -48,7 +48,7 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoneId]);
+  }, [setId, zoneSlug]);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -63,7 +63,7 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
     const res = await fetch("/api/cleaner-auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ zoneId, code: typedCode }),
+      body: JSON.stringify({ setId, code: typedCode }),
     });
     const body = await res.json().catch(() => ({}));
     setLoginLoading(false);
@@ -189,7 +189,8 @@ export default function ScanClient({ zoneId }: { zoneId: string }) {
           />
           {activeSession.job_started_at && !activeSession.job_finished_at && (
             <ScanForm
-              zoneId={zone.id}
+              setId={setId}
+              zoneSlug={zone.slug}
               sessionId={activeSession.id}
               cleanerId={cleaner.id}
               requirePhoto={zone.require_photo}

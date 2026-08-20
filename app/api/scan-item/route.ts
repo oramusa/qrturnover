@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   const { data: item } = await supabase
     .from("zone_checklist_items")
-    .select("id, zone_id, zones ( property_id )")
+    .select("id, property_id")
     .eq("id", itemId)
     .single();
 
@@ -24,9 +24,7 @@ export async function POST(req: NextRequest) {
     .eq("id", sessionId)
     .single();
 
-  const itemPropertyId = (item?.zones as unknown as { property_id: string } | null)?.property_id;
-
-  if (!item || !session || session.property_id !== itemPropertyId) {
+  if (!item || !session || session.property_id !== item.property_id) {
     return NextResponse.json({ error: "Item/session mismatch" }, { status: 400 });
   }
   if (session.status !== "in_progress") {

@@ -7,25 +7,26 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 // forged cookie could misattribute a scan, but can't access any host data or
 // do anything more sensitive than "mark a zone done as the wrong cleaner."
 export async function POST(req: NextRequest) {
-  const { zoneId, code } = await req.json();
+  const { setId, code } = await req.json();
 
-  if (!zoneId || !code) {
-    return NextResponse.json({ error: "Missing zoneId or code" }, { status: 400 });
+  if (!setId || !code) {
+    return NextResponse.json({ error: "Missing setId or code" }, { status: 400 });
   }
 
   const supabase = createServiceRoleClient();
 
-  const { data: zone } = await supabase
-    .from("zones")
+  const { data: claim } = await supabase
+    .from("property_set_claims")
     .select("property_id, properties ( host_id )")
-    .eq("id", zoneId)
-    .single();
+    .eq("set_id", setId)
+    .is("released_at", null)
+    .maybeSingle();
 
-  if (!zone) {
-    return NextResponse.json({ error: "Zone not found" }, { status: 404 });
+  if (!claim) {
+    return NextResponse.json({ error: "This QR sheet isn't assigned to a property yet" }, { status: 404 });
   }
 
-  const hostId = (zone.properties as unknown as { host_id: string })?.host_id;
+  const hostId = (claim.properties as unknown as { host_id: string })?.host_id;
 
   const { data: cleaner } = await supabase
     .from("cleaners")

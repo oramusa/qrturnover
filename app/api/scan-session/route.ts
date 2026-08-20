@@ -5,30 +5,49 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 // browser's localStorage (cookies proved unreliable on some mobile browsers, see
 // ScanClient.tsx). This lets the client fetch zone/turnover state without ever
 // touching the service role key directly.
+//
+// A QR code encodes {setId, zoneSlug} — stable regardless of which property has
+// the physical sheet claimed. This route resolves that pair through the active
+// property_set_claims row to find the actual property.
 export async function GET(req: NextRequest) {
-  const zoneId = req.nextUrl.searchParams.get("zoneId");
+  const setId = req.nextUrl.searchParams.get("setId");
+  const zoneSlug = req.nextUrl.searchParams.get("zoneSlug");
   const cleanerId = req.nextUrl.searchParams.get("cleanerId");
 
-  if (!zoneId) {
-    return NextResponse.json({ error: "Missing zoneId" }, { status: 400 });
+  if (!setId || !zoneSlug) {
+    return NextResponse.json({ error: "Missing setId or zoneSlug" }, { status: 400 });
   }
 
   const supabase = createServiceRoleClient();
 
-  const { data: zone } = await supabase
-    .from("zones")
-    .select(
-      "id, name, task_description, require_photo, property_id, properties ( name, host_id )"
-    )
-    .eq("id", zoneId)
-    .single();
+  const { data: zoneDef } = await supabase
+    .from("qr_set_zones")
+    .select("zone_label")
+    .eq("set_id", setId)
+    .eq("zone_slug", zoneSlug)
+    .maybeSingle();
 
-  if (!zone) {
+  if (!zoneDef) {
     return NextResponse.json({ error: "Zone not found" }, { status: 404 });
   }
 
-  const hostId = (zone.properties as unknown as { host_id: string })?.host_id;
-  const propertyName = (zone.properties as unknown as { name: string })?.name;
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("property_id, properties ( name, host_id )")
+    .eq("set_id", setId)
+    .is("released_at", null)
+    .maybeSingle();
+
+  if (!claim) {
+    return NextResponse.json(
+      { error: "This QR sheet isn't assigned to a property yet" },
+      { status: 404 }
+    );
+  }
+
+  const propertyId = claim.property_id;
+  const hostId = (claim.properties as unknown as { host_id: string })?.host_id;
+  const propertyName = (claim.properties as unknown as { name: string })?.name;
 
   let cleanerName: string | null = null;
   if (cleanerId) {
@@ -41,10 +60,17 @@ export async function GET(req: NextRequest) {
     cleanerName = cleaner?.name ?? null;
   }
 
+  const { data: zoneSettings } = await supabase
+    .from("property_zone_settings")
+    .select("task_description, require_photo")
+    .eq("property_id", propertyId)
+    .eq("zone_slug", zoneSlug)
+    .maybeSingle();
+
   const { data: activeSession } = await supabase
     .from("turnover_sessions")
     .select("id, job_started_at, job_finished_at")
-    .eq("property_id", zone.property_id)
+    .eq("property_id", propertyId)
     .eq("status", "in_progress")
     .order("started_at", { ascending: false })
     .limit(1)
@@ -53,7 +79,8 @@ export async function GET(req: NextRequest) {
   const { data: checklistItems } = await supabase
     .from("zone_checklist_items")
     .select("id, label, sort_order")
-    .eq("zone_id", zoneId)
+    .eq("property_id", propertyId)
+    .eq("zone_slug", zoneSlug)
     .order("sort_order", { ascending: true });
 
   let completedIds = new Set<string>();
@@ -71,32 +98,36 @@ export async function GET(req: NextRequest) {
     completed: completedIds.has(item.id),
   }));
 
-  const { data: propertyZones } = await supabase
-    .from("zones")
-    .select("id, name, sort_order")
-    .eq("property_id", zone.property_id)
+  const { data: setZones } = await supabase
+    .from("qr_set_zones")
+    .select("zone_slug, zone_label, sort_order")
+    .eq("set_id", setId)
     .order("sort_order", { ascending: true });
 
-  let doneZoneIds = new Set<string>();
+  let doneZoneSlugs = new Set<string>();
   if (activeSession) {
     const { data: scans } = await supabase
-      .from("scan_records")
-      .select("zone_id")
+      .from("scan_events")
+      .select("zone_slug")
       .eq("session_id", activeSession.id);
-    doneZoneIds = new Set((scans ?? []).map((s) => s.zone_id));
+    doneZoneSlugs = new Set((scans ?? []).map((s) => s.zone_slug));
   }
 
-  const otherZones = (propertyZones ?? [])
-    .filter((z) => z.id !== zoneId)
-    .map((z) => ({ id: z.id, name: z.name, done: doneZoneIds.has(z.id) }));
+  const otherZones = (setZones ?? [])
+    .filter((z) => z.zone_slug !== zoneSlug)
+    .map((z) => ({
+      slug: z.zone_slug,
+      name: z.zone_label,
+      done: doneZoneSlugs.has(z.zone_slug),
+    }));
 
   return NextResponse.json({
     zone: {
-      id: zone.id,
-      name: zone.name,
-      task_description: zone.task_description,
+      slug: zoneSlug,
+      name: zoneDef.zone_label,
+      task_description: zoneSettings?.task_description ?? null,
       checklist,
-      require_photo: zone.require_photo,
+      require_photo: zoneSettings?.require_photo ?? false,
       property_name: propertyName,
     },
     // null cleanerName with a non-null cleanerId means the stored id is stale/invalid

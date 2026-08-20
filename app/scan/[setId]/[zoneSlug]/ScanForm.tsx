@@ -5,19 +5,21 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function ScanForm({
-  zoneId,
+  setId,
+  zoneSlug,
   sessionId,
   cleanerId,
   requirePhoto,
   allItemsChecked,
   otherZones,
 }: {
-  zoneId: string;
+  setId: string;
+  zoneSlug: string;
   sessionId: string;
   cleanerId: string;
   requirePhoto?: boolean;
   allItemsChecked: boolean;
-  otherZones: { id: string; name: string; done: boolean }[];
+  otherZones: { slug: string; name: string; done: boolean }[];
 }) {
   const router = useRouter();
   const [photo, setPhoto] = useState<File | null>(null);
@@ -36,7 +38,8 @@ export default function ScanForm({
     setStatus("submitting");
 
     const formData = new FormData();
-    formData.append("zoneId", zoneId);
+    formData.append("setId", setId);
+    formData.append("zoneSlug", zoneSlug);
     formData.append("sessionId", sessionId);
     formData.append("cleanerId", cleanerId);
     if (photo) formData.append("photo", photo);
@@ -59,8 +62,8 @@ export default function ScanForm({
             <div className="space-y-2">
               {pendingZones.map((z) => (
                 <Link
-                  key={z.id}
-                  href={`/scan/${z.id}`}
+                  key={z.slug}
+                  href={`/scan/${setId}/${z.slug}`}
                   className="block rounded-lg border px-4 py-3 bg-white text-gray-900 font-medium text-center active:bg-gray-100"
                 >
                   {z.name}

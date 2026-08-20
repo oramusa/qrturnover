@@ -8,23 +8,31 @@ import { sendEmail } from "@/lib/email";
 // instead of relying on row-level security.
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
-  const zoneId = formData.get("zoneId") as string | null;
+  const setId = formData.get("setId") as string | null;
+  const zoneSlug = formData.get("zoneSlug") as string | null;
   const sessionId = formData.get("sessionId") as string | null;
   const cleanerId = formData.get("cleanerId") as string | null;
   const photo = formData.get("photo") as File | null;
 
-  if (!zoneId || !sessionId) {
-    return NextResponse.json({ error: "Missing zoneId or sessionId" }, { status: 400 });
+  if (!setId || !zoneSlug || !sessionId) {
+    return NextResponse.json({ error: "Missing setId, zoneSlug, or sessionId" }, { status: 400 });
   }
 
   const supabase = createServiceRoleClient();
 
-  // Confirm the session is real, still in progress, and actually belongs to this zone's property
-  const { data: zone } = await supabase
-    .from("zones")
-    .select("id, name, require_photo, property_id, properties ( name, hosts ( email ) )")
-    .eq("id", zoneId)
-    .single();
+  const { data: zoneDef } = await supabase
+    .from("qr_set_zones")
+    .select("zone_label")
+    .eq("set_id", setId)
+    .eq("zone_slug", zoneSlug)
+    .maybeSingle();
+
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("property_id, properties ( name, hosts ( email ) )")
+    .eq("set_id", setId)
+    .is("released_at", null)
+    .maybeSingle();
 
   const { data: session } = await supabase
     .from("turnover_sessions")
@@ -32,14 +40,23 @@ export async function POST(req: NextRequest) {
     .eq("id", sessionId)
     .single();
 
-  if (!zone || !session || session.property_id !== zone.property_id) {
+  if (!zoneDef || !claim || !session || session.property_id !== claim.property_id) {
     return NextResponse.json({ error: "Zone/session mismatch" }, { status: 400 });
   }
   if (session.status !== "in_progress") {
     return NextResponse.json({ error: "Session is not active" }, { status: 400 });
   }
 
-  if (zone.require_photo && (!photo || photo.size === 0)) {
+  const propertyId = claim.property_id;
+
+  const { data: zoneSettings } = await supabase
+    .from("property_zone_settings")
+    .select("require_photo")
+    .eq("property_id", propertyId)
+    .eq("zone_slug", zoneSlug)
+    .maybeSingle();
+
+  if (zoneSettings?.require_photo && (!photo || photo.size === 0)) {
     return NextResponse.json(
       { error: "This zone requires a photo before it can be marked done" },
       { status: 400 }
@@ -49,7 +66,8 @@ export async function POST(req: NextRequest) {
   const { data: checklistItems, error: checklistItemsError } = await supabase
     .from("zone_checklist_items")
     .select("id")
-    .eq("zone_id", zoneId);
+    .eq("property_id", propertyId)
+    .eq("zone_slug", zoneSlug);
 
   if (checklistItemsError) {
     return NextResponse.json({ error: checklistItemsError.message }, { status: 500 });
@@ -74,7 +92,7 @@ export async function POST(req: NextRequest) {
   let photoUrl: string | null = null;
   if (photo && photo.size > 0) {
     const ext = photo.name.split(".").pop() || "jpg";
-    const path = `${sessionId}/${zoneId}-${Date.now()}.${ext}`;
+    const path = `${sessionId}/${zoneSlug}-${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage
       .from("scan-photos")
       .upload(path, photo, { contentType: photo.type });
@@ -86,15 +104,16 @@ export async function POST(req: NextRequest) {
   }
 
   // Upsert so re-scanning the same zone just updates the timestamp/photo instead of erroring
-  const { error } = await supabase.from("scan_records").upsert(
+  const { error } = await supabase.from("scan_events").upsert(
     {
       session_id: sessionId,
-      zone_id: zoneId,
+      property_id: propertyId,
+      zone_slug: zoneSlug,
       cleaner_id: cleanerId || null,
       scanned_at: new Date().toISOString(),
       photo_url: photoUrl,
     },
-    { onConflict: "session_id,zone_id" }
+    { onConflict: "session_id,zone_slug" }
   );
 
   if (error) {
@@ -102,12 +121,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Best-effort per-zone notification — never blocks the cleaner's flow if it fails.
-  const property = zone.properties as unknown as { name: string; hosts: { email: string } };
+  const property = claim.properties as unknown as { name: string; hosts: { email: string } };
   if (property?.hosts?.email) {
     sendEmail({
       to: property.hosts.email,
-      subject: `${zone.name} marked done at ${property.name}`,
-      text: `${zone.name} was just scanned as done at ${property.name}.`,
+      subject: `${zoneDef.zone_label} marked done at ${property.name}`,
+      text: `${zoneDef.zone_label} was just scanned as done at ${property.name}.`,
     }).catch(() => {});
   }
 

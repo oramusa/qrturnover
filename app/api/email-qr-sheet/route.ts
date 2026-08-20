@@ -32,17 +32,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Property not found" }, { status: 404 });
   }
 
-  const { data: zones } = await supabase
-    .from("zones")
-    .select("id, name")
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("set_id")
     .eq("property_id", propertyId)
-    .order("sort_order", { ascending: true });
+    .is("released_at", null)
+    .maybeSingle();
+
+  const { data: zones } = claim
+    ? await supabase
+        .from("qr_set_zones")
+        .select("zone_slug, zone_label")
+        .eq("set_id", claim.set_id)
+        .order("sort_order", { ascending: true })
+    : { data: null };
 
   if (!zones || zones.length === 0) {
     return NextResponse.json({ error: "This property has no zones yet" }, { status: 400 });
   }
 
-  const lines = zones.map((z) => `${z.name}: ${zoneScanUrl(z.id)}`);
+  const lines = zones.map((z) => `${z.zone_label}: ${zoneScanUrl(claim!.set_id, z.zone_slug)}`);
   await sendEmail({
     to: email,
     subject: `QR scan links — ${property.name}`,

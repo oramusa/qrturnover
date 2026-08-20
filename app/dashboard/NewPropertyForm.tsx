@@ -28,20 +28,66 @@ export default function NewPropertyForm() {
       return;
     }
 
-    const { data, error: insertError } = await supabase
+    const { data: property, error: insertError } = await supabase
       .from("properties")
       .insert({ host_id: user.id, name, address: address || null })
       .select()
       .single();
 
-    setLoading(false);
-    if (insertError) {
-      setError(insertError.message);
+    if (insertError || !property) {
+      setLoading(false);
+      setError(insertError?.message ?? "Couldn't create the property.");
       return;
     }
-    if (data) {
-      router.push(`/properties/${data.id}`);
+
+    // Atomically claim the next available physical QR set for this property.
+    const { data: setId, error: claimError } = await supabase.rpc("claim_next_qr_set", {
+      p_property_id: property.id,
+    });
+
+    if (claimError || !setId) {
+      // Don't leave an orphaned property with no QR set attached.
+      await supabase.from("properties").delete().eq("id", property.id);
+      setLoading(false);
+      setError(
+        claimError?.message.includes("No unclaimed QR sets")
+          ? "No QR sets are available to assign right now. Please contact support."
+          : claimError?.message ?? "Couldn't claim a QR set for this property."
+      );
+      return;
     }
+
+    const { data: setZones } = await supabase
+      .from("qr_set_zones")
+      .select("zone_slug, zone_label")
+      .eq("set_id", setId);
+
+    if (setZones && setZones.length > 0) {
+      const { data: templates } = await supabase
+        .from("checklist_templates")
+        .select("id, room_type, checklist_template_items ( label, sort_order )")
+        .eq("host_id", user.id);
+
+      const rowsToInsert = setZones.flatMap((zone) => {
+        const match = templates?.find(
+          (t) => t.room_type.toLowerCase() === zone.zone_label.toLowerCase()
+        );
+        if (!match || match.checklist_template_items.length === 0) return [];
+        return match.checklist_template_items.map((item) => ({
+          property_id: property.id,
+          zone_slug: zone.zone_slug,
+          label: item.label,
+          sort_order: item.sort_order,
+        }));
+      });
+
+      if (rowsToInsert.length > 0) {
+        await supabase.from("zone_checklist_items").insert(rowsToInsert);
+      }
+    }
+
+    setLoading(false);
+    router.push(`/properties/${property.id}`);
   }
 
   if (!open) {
@@ -70,6 +116,9 @@ export default function NewPropertyForm() {
         onChange={(e) => setAddress(e.target.value)}
         className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
       />
+      <p className="text-xs text-gray-500">
+        The next available QR sticker set will be automatically assigned to this property.
+      </p>
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <div className="flex gap-2">
         <button
@@ -77,7 +126,7 @@ export default function NewPropertyForm() {
           disabled={loading}
           className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
         >
-          {loading ? "Creating..." : "Create & add zones"}
+          {loading ? "Creating..." : "Create property"}
         </button>
         <button
           type="button"

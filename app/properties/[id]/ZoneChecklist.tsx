@@ -6,11 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 import ChecklistItemsEditor from "@/components/ChecklistItemsEditor";
 
 export default function ZoneChecklist({
-  zoneId,
+  propertyId,
+  zoneSlug,
   zoneName,
   items,
 }: {
-  zoneId: string;
+  propertyId: string;
+  zoneSlug: string;
   zoneName: string;
   items: { id: string; label: string; sort_order: number }[];
 }) {
@@ -23,7 +25,8 @@ export default function ZoneChecklist({
     setError(null);
     const supabase = createClient();
     const { error } = await supabase.from("zone_checklist_items").insert({
-      zone_id: zoneId,
+      property_id: propertyId,
+      zone_slug: zoneSlug,
       label,
       sort_order: items.length > 0 ? Math.max(...items.map((i) => i.sort_order)) + 1 : 0,
     });

@@ -18,16 +18,26 @@ export default async function PrintSheetPage({
     .eq("id", id)
     .single();
 
-  const { data: zones } = await supabase
-    .from("zones")
-    .select("id, name")
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("set_id")
     .eq("property_id", id)
-    .order("sort_order", { ascending: true });
+    .is("released_at", null)
+    .maybeSingle();
+
+  const { data: zones } = claim
+    ? await supabase
+        .from("qr_set_zones")
+        .select("zone_slug, zone_label, sort_order")
+        .eq("set_id", claim.set_id)
+        .order("sort_order", { ascending: true })
+    : { data: [] as { zone_slug: string; zone_label: string; sort_order: number }[] };
 
   const zonesWithQr = await Promise.all(
     (zones ?? []).map(async (zone) => ({
-      ...zone,
-      qr: await zoneQrDataUrl(zone.id),
+      slug: zone.zone_slug,
+      name: zone.zone_label,
+      qr: await zoneQrDataUrl(claim!.set_id, zone.zone_slug),
     }))
   );
 
@@ -59,7 +69,7 @@ export default async function PrintSheetPage({
       <div className="grid grid-cols-3 gap-6 print:grid-cols-3">
         {zonesWithQr.map((zone) => (
           <div
-            key={zone.id}
+            key={zone.slug}
             className="border rounded-lg p-3 flex flex-col items-center text-center break-inside-avoid"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -70,7 +80,9 @@ export default async function PrintSheetPage({
       </div>
 
       {zonesWithQr.length === 0 && (
-        <p className="text-gray-500">No zones yet — add zones first, then come back here.</p>
+        <p className="text-gray-500">
+          {claim ? "This QR set has no zones defined." : "No QR set claimed for this property yet."}
+        </p>
       )}
     </div>
   );
