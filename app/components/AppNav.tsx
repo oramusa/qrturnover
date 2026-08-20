@@ -10,11 +10,8 @@ const NAV_ITEMS = [
 
 export default function AppNav({
   current,
-  printHref,
 }: {
   current?: (typeof NAV_ITEMS)[number]["href"];
-  /** Only set on a property's own page — printing QR codes needs a property to print for. */
-  printHref?: string;
 }) {
   return (
     <header className="border-b border-gray-800">
@@ -36,14 +33,6 @@ export default function AppNav({
               {item.label}
             </Link>
           ))}
-          {printHref && (
-            <Link
-              href={printHref}
-              className="px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition-colors"
-            >
-              Print QR sheet
-            </Link>
-          )}
           <form action="/api/auth/signout" method="post" className="ml-2">
             <button className="text-sm text-gray-400 hover:text-white px-3 py-1.5">
               Log out

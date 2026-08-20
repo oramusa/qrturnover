@@ -102,7 +102,7 @@ export default async function PropertyPage({
 
   return (
     <>
-      <AppNav printHref={`/properties/${id}/print`} />
+      <AppNav />
       <div className="max-w-3xl mx-auto p-6">
       <div className="flex items-center justify-between mt-2 mb-6">
         <div>
@@ -111,7 +111,15 @@ export default async function PropertyPage({
             <p className="text-sm text-gray-500">{property.address}</p>
           )}
         </div>
-        <DeletePropertyButton propertyId={id} propertyName={property.name} />
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/properties/${id}/print`}
+            className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900"
+          >
+            Print QR sheet
+          </Link>
+          <DeletePropertyButton propertyId={id} propertyName={property.name} />
+        </div>
       </div>
 
       <AutoRefresh enabled={!!activeSession} sessionId={activeSession?.id} />
