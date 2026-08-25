@@ -366,6 +366,22 @@ create policy "hosts read zones of their claimed sets" on public.qr_set_zones
     )
   );
 
+-- Lets a host add a custom zone (room) to the set they've currently claimed —
+-- the QR image itself is generated on demand from (set_id, zone_slug), so a
+-- new row here is immediately printable without touching the physical-sheet
+-- provisioning flow.
+drop policy if exists "hosts add zones to their claimed sets" on public.qr_set_zones;
+create policy "hosts add zones to their claimed sets" on public.qr_set_zones
+  for insert with check (
+    exists (
+      select 1 from public.property_set_claims c
+      join public.properties p on p.id = c.property_id
+      where c.set_id = qr_set_zones.set_id
+        and c.released_at is null
+        and p.host_id = auth.uid()
+    )
+  );
+
 drop policy if exists "hosts read own claims" on public.property_set_claims;
 create policy "hosts read own claims" on public.property_set_claims
   for select using (

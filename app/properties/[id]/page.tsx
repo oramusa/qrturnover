@@ -6,6 +6,7 @@ import AutoRefresh from "./AutoRefresh";
 import DeletePropertyButton from "./DeletePropertyButton";
 import ZoneChecklist from "./ZoneChecklist";
 import ZoneSettings from "./ZoneSettings";
+import AddZoneForm from "./AddZoneForm";
 import LocalTime from "./LocalTime";
 import AppNav from "@/app/components/AppNav";
 
@@ -175,15 +176,22 @@ export default async function PropertyPage({
         </p>
       )}
 
-      <div className="flex items-center justify-between mt-8 mb-3">
+      <div className="flex items-center justify-between mt-8 mb-3 flex-wrap gap-2">
         <h2 className="text-lg font-medium">Zones</h2>
         {setId && (
-          <span className="flex items-center gap-1.5 text-xs text-muted">
-            QR set
-            <span className="font-mono bg-gray-100 text-gray-900 px-2 py-0.5 rounded-full">
-              {setId}
+          <div className="flex items-center gap-3">
+            <AddZoneForm
+              setId={setId}
+              existingSlugs={zones.map((z) => z.slug)}
+              nextSortOrder={zones.length}
+            />
+            <span className="flex items-center gap-1.5 text-xs text-muted">
+              QR set
+              <span className="font-mono bg-gray-100 text-gray-900 px-2 py-0.5 rounded-full">
+                {setId}
+              </span>
             </span>
-          </span>
+          </div>
         )}
       </div>
 
