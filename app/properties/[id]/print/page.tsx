@@ -66,6 +66,10 @@ export default async function PrintSheetPage({
         links straight to a cleaner&apos;s phone instead — no printer needed.
       </p>
 
+      {claim && (
+        <p className="text-xs font-mono text-muted mb-4">QR set: {claim.set_id}</p>
+      )}
+
       <div className="grid grid-cols-3 gap-6 print:grid-cols-3">
         {zonesWithQr.map((zone) => (
           <div
