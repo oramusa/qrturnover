@@ -203,27 +203,6 @@ export default async function PropertyPage({
             <div key={zone.slug} className="border rounded-lg px-4 py-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  {zonePhotos[0] && (
-                    <a
-                      href={zonePhotos[0].url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative shrink-0"
-                      title={zonePhotos[0].isDuplicate ? "Matches a photo uploaded before — possible reused photo" : undefined}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={zonePhotos[0].url}
-                        alt={`${zone.name} photo`}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
-                      {zonePhotos[0].isDuplicate && (
-                        <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
-                          reused
-                        </span>
-                      )}
-                    </a>
-                  )}
                   <div className="min-w-0">
                     <p className="font-medium flex items-center gap-2">
                       {zone.name}
@@ -269,9 +248,9 @@ export default async function PropertyPage({
                   )}
                 </div>
               </div>
-              {zonePhotos.length > 1 && (
+              {zonePhotos.length > 0 && (
                 <div className="flex gap-2 mt-2 flex-nowrap overflow-x-auto">
-                  {zonePhotos.slice(1).map((p, i) => (
+                  {zonePhotos.map((p, i) => (
                     <a
                       key={i}
                       href={p.url}
@@ -283,7 +262,7 @@ export default async function PropertyPage({
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={p.url}
-                        alt={`${zone.name} photo ${i + 2}`}
+                        alt={`${zone.name} photo ${i + 1}`}
                         className="w-10 h-10 rounded object-cover border"
                       />
                       {p.isDuplicate && (
