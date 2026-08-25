@@ -112,7 +112,7 @@ export default function ScanForm({
 
         {pendingZones.length > 0 ? (
           <div className="mt-6 text-left">
-            <p className="text-sm text-gray-500 mb-2 text-center">Scan next zone</p>
+            <p className="text-sm text-muted mb-2 text-center">Scan next zone</p>
             <div className="space-y-2">
               {pendingZones.map((z) => (
                 <Link
@@ -126,7 +126,7 @@ export default function ScanForm({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Every zone is scanned — tap &quot;Finish job&quot; above once you&apos;re done.
           </p>
         )}
@@ -144,7 +144,7 @@ export default function ScanForm({
   return (
     <form onSubmit={handleSubmit} className="mt-6 space-y-3">
       <label className="block">
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted">
           {requirePhoto ? "Add photos (at least one required for this zone)" : "Add photos (optional)"}
         </span>
         <input

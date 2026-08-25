@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Secondary/label text that sits directly on the page background (not
+     inside a fixed-color badge or pill). Tuned per color scheme so it stays
+     readable against --background; badge-internal grays are unaffected and
+     stay as plain Tailwind gray-* classes. */
+  --muted: #6b7280;
   /* Reserve space for the scrollbar on every page, so switching between a
      short page (no scrollbar) and a tall one (scrollbar present) doesn't
      shift centered content — like the nav bar — sideways by a few pixels. */
@@ -12,6 +17,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -20,6 +26,7 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --muted: #a3a3a3;
   }
 }
 

@@ -8,7 +8,7 @@ export default function Home() {
         <br />
         without calling anyone.
       </h1>
-      <p className="text-gray-600 mt-4 text-lg">
+      <p className="text-muted mt-4 text-lg">
         Stick a QR code at every zone in your rental. Your cleaner scans each one as
         they finish. You see real-time, per-zone proof — across every property you manage.
       </p>
@@ -23,7 +23,7 @@ export default function Home() {
           Log in
         </Link>
       </div>
-      <p className="text-sm text-gray-400 mt-6">No credit card required to start.</p>
+      <p className="text-sm text-muted mt-6">No credit card required to start.</p>
     </div>
   );
 }

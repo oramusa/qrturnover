@@ -27,14 +27,14 @@ export default function AppNav({
               className={`px-3 py-1.5 rounded-md transition-colors ${
                 current === item.href
                   ? "bg-white text-gray-900"
-                  : "text-gray-400 hover:text-white"
+                  : "text-muted hover:text-white"
               }`}
             >
               {item.label}
             </Link>
           ))}
           <form action="/api/auth/signout" method="post" className="ml-2">
-            <button className="text-sm text-gray-400 hover:text-white px-3 py-1.5">
+            <button className="text-sm text-muted hover:text-white px-3 py-1.5">
               Log out
             </button>
           </form>

@@ -47,7 +47,7 @@ export default async function AccountPage({
         )}
 
         <div className="border rounded-lg p-4 mb-6">
-          <p className="text-xs text-gray-500">Email</p>
+          <p className="text-xs text-muted">Email</p>
           <p className="text-sm mt-1">{user?.email}</p>
         </div>
 

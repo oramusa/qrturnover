@@ -62,7 +62,7 @@ export default function EmailQrForm({ propertyId }: { propertyId: string }) {
       <button
         type="button"
         onClick={() => setOpen(false)}
-        className="text-sm text-gray-500"
+        className="text-sm text-muted"
       >
         Cancel
       </button>

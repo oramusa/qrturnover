@@ -75,19 +75,19 @@ export default async function BillingPage() {
         <h1 className="text-2xl font-semibold mb-6">Billing &amp; Subscription</h1>
 
         <div className="border rounded-lg p-4 mb-6">
-          <p className="text-xs text-gray-500">Plan</p>
+          <p className="text-xs text-muted">Plan</p>
           {price ? (
             <p className="text-sm mt-1">
               {formatMoney(price.unit_amount ?? 0, price.currency)}
               {price.recurring ? ` / ${price.recurring.interval}` : ""}
             </p>
           ) : (
-            <p className="text-sm mt-1 text-gray-500">
+            <p className="text-sm mt-1 text-muted">
               {host?.subscription_status === "trialing" ? "Free trial" : "No active plan"}
             </p>
           )}
 
-          <p className="text-xs text-gray-500 mt-3">Status</p>
+          <p className="text-xs text-muted mt-3">Status</p>
           <p className="text-sm mt-1">
             {subscription
               ? STATUS_LABEL[subscription.status] ?? subscription.status
@@ -97,7 +97,7 @@ export default async function BillingPage() {
 
           {item && (
             <>
-              <p className="text-xs text-gray-500 mt-3">
+              <p className="text-xs text-muted mt-3">
                 {subscription?.cancel_at_period_end ? "Access ends" : "Renews"}
               </p>
               <p className="text-sm mt-1">
@@ -130,7 +130,7 @@ export default async function BillingPage() {
 
         <h2 className="text-sm font-medium mb-2">Invoice history</h2>
         {invoices.length === 0 ? (
-          <p className="text-sm text-gray-500">No invoices yet.</p>
+          <p className="text-sm text-muted">No invoices yet.</p>
         ) : (
           <div className="space-y-2">
             {invoices.map((inv) => (
@@ -145,7 +145,7 @@ export default async function BillingPage() {
                       options={{ year: "numeric", month: "short", day: "numeric" }}
                     />
                   </p>
-                  <p className="text-gray-500 text-xs mt-0.5 capitalize">{inv.status}</p>
+                  <p className="text-muted text-xs mt-0.5 capitalize">{inv.status}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span>{formatMoney(inv.amount_paid, inv.currency)}</span>
@@ -154,7 +154,7 @@ export default async function BillingPage() {
                       href={inv.invoice_pdf}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-500 underline text-xs"
+                      className="text-muted underline text-xs"
                     >
                       PDF
                     </a>

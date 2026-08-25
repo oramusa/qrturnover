@@ -32,7 +32,7 @@ export default function DeletePropertyButton({
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="text-sm text-gray-400 hover:text-red-600 disabled:opacity-50"
+      className="text-sm text-muted hover:text-red-600 disabled:opacity-50"
     >
       {loading ? "Deleting..." : "Delete property"}
     </button>

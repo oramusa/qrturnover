@@ -74,7 +74,7 @@ export default function StarterTemplatePicker() {
   return (
     <div className="mb-8">
       <h2 className="text-sm font-medium mb-1">Start from a template pack</h2>
-      <p className="text-xs text-gray-500 mb-3">
+      <p className="text-xs text-muted mb-3">
         Seeds Kitchen, Bathroom, Bedroom, and Living Room templates with this pack&apos;s
         items — you can add, edit, or remove items afterward. Picking a pack replaces the
         items in any templates you already have for those room types.
@@ -84,7 +84,7 @@ export default function StarterTemplatePicker() {
           <div key={pack.id} className="border rounded-lg p-4 flex flex-col">
             <div className="flex-1">
               <p className="font-medium">{pack.name}</p>
-              <p className="text-xs text-gray-500 mt-1">{pack.description}</p>
+              <p className="text-xs text-muted mt-1">{pack.description}</p>
             </div>
             <button
               type="button"

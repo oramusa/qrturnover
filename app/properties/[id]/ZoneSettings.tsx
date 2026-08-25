@@ -48,7 +48,7 @@ export default function ZoneSettings({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="text-xs text-gray-500 underline"
+        className="text-xs text-muted underline"
       >
         Zone settings
       </button>

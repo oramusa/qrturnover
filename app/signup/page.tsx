@@ -75,7 +75,7 @@ export default function SignupPage() {
           {loading ? "Creating account..." : "Start free trial"}
         </button>
       </form>
-      <p className="text-sm text-gray-500 mt-4">
+      <p className="text-sm text-muted mt-4">
         Already have an account? <a href="/login" className="underline">Log in</a>
       </p>
     </div>

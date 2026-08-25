@@ -39,7 +39,7 @@ export default function CleanerAssignment({
 
   if (allCleaners.length === 0) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted">
         No cleaners on your roster yet —{" "}
         <a href="/cleaners" className="underline">
           add one

@@ -144,7 +144,7 @@ export default async function PropertyPage({
         <div>
           <h1 className="text-2xl font-semibold">{property.name}</h1>
           {property.address && (
-            <p className="text-sm text-gray-500">{property.address}</p>
+            <p className="text-sm text-muted">{property.address}</p>
           )}
         </div>
         <div className="flex items-center gap-4">
@@ -167,7 +167,7 @@ export default async function PropertyPage({
       />
 
       {activeSession && (
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm text-muted mt-2">
           {activeSession.cleaners
             ? `Assigned cleaner: ${(activeSession.cleaners as unknown as { name: string }).name}`
             : "Waiting for a cleaner to start the job"}
@@ -178,7 +178,7 @@ export default async function PropertyPage({
       <div className="flex items-center justify-between mt-8 mb-3">
         <h2 className="text-lg font-medium">Zones</h2>
         {setId && (
-          <span className="flex items-center gap-1.5 text-xs text-gray-400">
+          <span className="flex items-center gap-1.5 text-xs text-muted">
             QR set
             <span className="font-mono bg-gray-100 text-gray-900 px-2 py-0.5 rounded-full">
               {setId}
@@ -188,7 +188,7 @@ export default async function PropertyPage({
       </div>
 
       {activeSession && (
-        <p className="text-sm text-gray-500 mb-3">
+        <p className="text-sm text-muted mb-3">
           Live status for the current turnover — updates as the cleaner scans each zone.
         </p>
       )}
@@ -228,16 +228,16 @@ export default async function PropertyPage({
                     <p className="font-medium flex items-center gap-2">
                       {zone.name}
                       {zone.require_photo && (
-                        <span className="text-[10px] text-gray-400 border rounded-full px-1.5 py-0.5">
+                        <span className="text-[10px] text-muted border rounded-full px-1.5 py-0.5">
                           photo required
                         </span>
                       )}
                     </p>
                     {zone.task_description && (
-                      <p className="text-xs text-gray-500">{zone.task_description}</p>
+                      <p className="text-xs text-muted">{zone.task_description}</p>
                     )}
                     {done && scannedBy && (
-                      <p className="text-xs text-gray-400">Scanned by {scannedBy}</p>
+                      <p className="text-xs text-muted">Scanned by {scannedBy}</p>
                     )}
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export default async function PropertyPage({
                         )}
                       </span>
                       {zone.zone_checklist_items.length > 0 && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted">
                           {zone.zone_checklist_items.filter((i) => completedItemIds.has(i.id)).length}/
                           {zone.zone_checklist_items.length} items
                         </span>
@@ -311,7 +311,7 @@ export default async function PropertyPage({
           );
         })}
         {zones.length === 0 && (
-          <p className="text-gray-500 text-sm">
+          <p className="text-muted text-sm">
             {setId
               ? "This QR set has no zones defined."
               : "No QR set claimed for this property yet."}
@@ -322,7 +322,7 @@ export default async function PropertyPage({
       <div className="border-t mt-8 pt-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-medium">Assigned cleaners</h2>
-          <Link href="/cleaners" className="text-xs text-gray-500 underline">
+          <Link href="/cleaners" className="text-xs text-muted underline">
             Manage cleaner roster
           </Link>
         </div>
@@ -337,7 +337,7 @@ export default async function PropertyPage({
         <div className="border-t mt-8 pt-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-medium">Turnover history</h2>
-            <Link href={`/history?property=${id}`} className="text-xs text-gray-500 underline">
+            <Link href={`/history?property=${id}`} className="text-xs text-muted underline">
               View full history
             </Link>
           </div>
@@ -357,7 +357,7 @@ export default async function PropertyPage({
                   <div className="flex items-center justify-between">
                     <div>
                       <p>{new Date(s.started_at).toLocaleDateString()}</p>
-                      <p className="text-gray-500 text-xs">
+                      <p className="text-muted text-xs">
                         {cleanerName ?? "No cleaner recorded"}
                         {duration ? ` · ${duration}` : ""}
                       </p>

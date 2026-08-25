@@ -53,7 +53,7 @@ export default async function DashboardPage() {
 
         <div className="grid gap-4 mt-8">
           {properties?.length === 0 && (
-            <p className="text-gray-500">
+            <p className="text-muted">
               No properties yet — add your first one above to generate its QR zone codes.
             </p>
           )}
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
               >
                 <div>
                   <h2 className="font-medium">{property.name}</h2>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted">
                     {zoneCount} zone{zoneCount === 1 ? "" : "s"}
                     {property.address ? ` · ${property.address}` : ""}
                   </p>

@@ -82,13 +82,13 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
   if (loadError) {
     return (
       <div className="max-w-sm mx-auto p-6 mt-16 text-center">
-        <p className="text-gray-500">Couldn&apos;t load this page. Check your connection and try again.</p>
+        <p className="text-muted">Couldn&apos;t load this page. Check your connection and try again.</p>
       </div>
     );
   }
 
   if (!data) {
-    return <div className="max-w-sm mx-auto p-6 mt-16 text-center text-gray-500">Loading…</div>;
+    return <div className="max-w-sm mx-auto p-6 mt-16 text-center text-muted">Loading…</div>;
   }
 
   const { zone, cleaner, activeSession, lastTurnoverJustFinished } = data;
@@ -96,9 +96,9 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
   if (!cleaner) {
     return (
       <div className="max-w-sm mx-auto p-6 mt-12">
-        <p className="text-sm text-gray-500">{zone.property_name}</p>
+        <p className="text-sm text-muted">{zone.property_name}</p>
         <h1 className="text-2xl font-semibold mt-1">{zone.name}</h1>
-        <p className="text-gray-600 mt-4">Enter the code your host gave you to get started.</p>
+        <p className="text-muted mt-4">Enter the code your host gave you to get started.</p>
         <form onSubmit={handleLogin} className="mt-4 space-y-3">
           <input
             name="code"
@@ -126,12 +126,12 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
   return (
     <div className="max-w-sm mx-auto p-6 mt-12">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{zone.property_name}</p>
+        <p className="text-sm text-muted">{zone.property_name}</p>
         <span className="text-xs bg-gray-100 rounded-full px-2 py-1 text-gray-600">{cleaner.name}</span>
       </div>
 
       <h1 className="text-2xl font-semibold">{zone.name}</h1>
-      {zone.task_description && <p className="text-gray-600 mt-2">{zone.task_description}</p>}
+      {zone.task_description && <p className="text-muted mt-2">{zone.task_description}</p>}
       {zone.checklist.length > 0 && (
         <ul className="mt-3 space-y-2">
           {zone.checklist.map((item) => (
@@ -164,7 +164,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
                     load();
                   }}
                 />
-                <span className={item.completed ? "line-through text-gray-600" : ""}>
+                <span className={item.completed ? "line-through text-muted" : ""}>
                   {item.label}
                 </span>
               </label>

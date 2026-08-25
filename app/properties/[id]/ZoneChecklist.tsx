@@ -136,7 +136,7 @@ export default function ZoneChecklist({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="text-xs text-gray-500 underline"
+        className="text-xs text-muted underline"
       >
         Checklist ({items.length})
       </button>

@@ -20,19 +20,19 @@ export default function PaymentMethodSection({
     <div className="border rounded-lg p-4 mb-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs text-gray-500">Payment method</p>
+          <p className="text-xs text-muted">Payment method</p>
           {brand && last4 ? (
             <p className="text-sm mt-1 capitalize">
               {brand} •••• {last4}
               {expMonth && expYear && (
-                <span className="text-gray-400">
+                <span className="text-muted">
                   {" "}
                   — expires {String(expMonth).padStart(2, "0")}/{expYear}
                 </span>
               )}
             </p>
           ) : (
-            <p className="text-sm mt-1 text-gray-500">No card on file</p>
+            <p className="text-sm mt-1 text-muted">No card on file</p>
           )}
         </div>
         {!editing && (

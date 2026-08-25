@@ -45,7 +45,7 @@ export default async function PrintSheetPage({
     <div className="max-w-3xl mx-auto p-6 print:p-0">
       <Link
         href={`/properties/${id}`}
-        className="text-sm text-gray-500 underline print:hidden"
+        className="text-sm text-muted underline print:hidden"
       >
         &larr; Back to property
       </Link>
@@ -60,7 +60,7 @@ export default async function PrintSheetPage({
         </div>
       </div>
 
-      <p className="text-sm text-gray-500 mb-6 print:hidden">
+      <p className="text-sm text-muted mb-6 print:hidden">
         Print this page, cut each code apart, and stick one at each zone. Adhesive
         label sheets (e.g. Avery 5160) work well for a more durable result. Or send the
         links straight to a cleaner&apos;s phone instead — no printer needed.
@@ -80,7 +80,7 @@ export default async function PrintSheetPage({
       </div>
 
       {zonesWithQr.length === 0 && (
-        <p className="text-gray-500">
+        <p className="text-muted">
           {claim ? "This QR set has no zones defined." : "No QR set claimed for this property yet."}
         </p>
       )}

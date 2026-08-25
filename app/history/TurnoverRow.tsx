@@ -68,7 +68,7 @@ export default function TurnoverRow({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="font-medium">{propertyName}</p>
-            <p className="text-gray-500 text-xs mt-0.5">
+            <p className="text-muted text-xs mt-0.5">
               <LocalTime
                 iso={startedAt}
                 options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }}
@@ -120,7 +120,7 @@ export default function TurnoverRow({
                 {zone.zone_checklist_items.length > 0 && (
                   <ul className="mt-1 space-y-0.5">
                     {zone.zone_checklist_items.map((item) => (
-                      <li key={item.id} className="text-xs text-gray-500 flex items-center gap-1.5">
+                      <li key={item.id} className="text-xs text-muted flex items-center gap-1.5">
                         <span>{completedItemIds.has(item.id) ? "✓" : "○"}</span>
                         {item.label}
                       </li>
@@ -157,7 +157,7 @@ export default function TurnoverRow({
             );
           })}
           <div className="flex items-center justify-between gap-3 pt-1">
-            <Link href={`/properties/${propertyId}`} className="text-sm text-gray-500 underline">
+            <Link href={`/properties/${propertyId}`} className="text-sm text-muted underline">
               Open property page
             </Link>
             <button

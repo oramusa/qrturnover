@@ -306,22 +306,22 @@ export default async function HistoryPage({
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="border rounded-lg p-3">
-          <p className="text-xs text-gray-500">Turnovers completed</p>
+          <p className="text-xs text-muted">Turnovers completed</p>
           <p className="text-xl font-semibold mt-1">{totalCount}</p>
         </div>
         <div className="border rounded-lg p-3">
-          <p className="text-xs text-gray-500">Average clean score</p>
+          <p className="text-xs text-muted">Average clean score</p>
           <p className="text-xl font-semibold mt-1">{avgScore !== null ? `${avgScore}%` : "—"}</p>
         </div>
         <div className="border rounded-lg p-3">
-          <p className="text-xs text-gray-500">Average duration</p>
+          <p className="text-xs text-muted">Average duration</p>
           <p className="text-xl font-semibold mt-1">
             {avgDuration !== null ? formatDuration(avgDuration) : "—"}
           </p>
         </div>
       </div>
       {totalCount > SUMMARY_CAP && (
-        <p className="text-xs text-gray-400 -mt-4 mb-6">
+        <p className="text-xs text-muted -mt-4 mb-6">
           Averages are based on the {SUMMARY_CAP} most recent matching turnovers.
         </p>
       )}
@@ -329,7 +329,7 @@ export default async function HistoryPage({
       <form method="get" className="border rounded-lg p-4 mb-6 grid gap-3 sm:grid-cols-4">
         <TzHiddenInput defaultValue={params.tz ?? ""} />
         <label className="block">
-          <span className="text-xs text-gray-500">Property</span>
+          <span className="text-xs text-muted">Property</span>
           <select
             name="property"
             defaultValue={params.property ?? ""}
@@ -344,7 +344,7 @@ export default async function HistoryPage({
           </select>
         </label>
         <label className="block">
-          <span className="text-xs text-gray-500">Cleaner</span>
+          <span className="text-xs text-muted">Cleaner</span>
           <select
             name="cleaner"
             defaultValue={params.cleaner ?? ""}
@@ -359,7 +359,7 @@ export default async function HistoryPage({
           </select>
         </label>
         <label className="block">
-          <span className="text-xs text-gray-500">From</span>
+          <span className="text-xs text-muted">From</span>
           <input
             type="date"
             name="from"
@@ -368,7 +368,7 @@ export default async function HistoryPage({
           />
         </label>
         <label className="block">
-          <span className="text-xs text-gray-500">To</span>
+          <span className="text-xs text-muted">To</span>
           <input
             type="date"
             name="to"
@@ -381,7 +381,7 @@ export default async function HistoryPage({
             Apply filters
           </button>
           {(params.property || params.cleaner || params.from || params.to) && (
-            <Link href="/history" className="text-sm text-gray-500 underline self-center">
+            <Link href="/history" className="text-sm text-muted underline self-center">
               Clear
             </Link>
           )}
@@ -389,13 +389,13 @@ export default async function HistoryPage({
       </form>
 
       {rows.length === 0 && (
-        <p className="text-gray-500 text-sm">No completed turnovers match these filters yet.</p>
+        <p className="text-muted text-sm">No completed turnovers match these filters yet.</p>
       )}
 
       <div className="space-y-6">
         {groups.map((group) => (
           <div key={group.label}>
-            <h2 className="text-sm font-medium text-gray-500 mb-2">{group.label}</h2>
+            <h2 className="text-sm font-medium text-muted mb-2">{group.label}</h2>
             <div className="space-y-2">
               {group.rows.map((s) => {
                 const score = computeScore(s, totalItemsByProperty);
@@ -424,17 +424,17 @@ export default async function HistoryPage({
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-6 text-sm">
           {pageNum > 1 ? (
-            <Link href={buildPageHref(pageNum - 1)} className="underline text-gray-500">
+            <Link href={buildPageHref(pageNum - 1)} className="underline text-muted">
               &larr; Previous
             </Link>
           ) : (
             <span />
           )}
-          <span className="text-gray-400 text-xs">
+          <span className="text-muted text-xs">
             Page {pageNum} of {totalPages}
           </span>
           {pageNum < totalPages ? (
-            <Link href={buildPageHref(pageNum + 1)} className="underline text-gray-500">
+            <Link href={buildPageHref(pageNum + 1)} className="underline text-muted">
               Next &rarr;
             </Link>
           ) : (

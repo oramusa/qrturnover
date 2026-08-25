@@ -74,13 +74,13 @@ export default function TemplateCard({
           onClick={() => setOpen(!open)}
           className="text-left font-medium"
         >
-          {roomType} <span className="text-xs text-gray-400">({items.length} items)</span>
+          {roomType} <span className="text-xs text-muted">({items.length} items)</span>
         </button>
         <button
           type="button"
           onClick={handleDeleteTemplate}
           disabled={deleting}
-          className="text-xs text-gray-400 hover:text-red-600 disabled:opacity-50"
+          className="text-xs text-muted hover:text-red-600 disabled:opacity-50"
         >
           Delete template
         </button>
