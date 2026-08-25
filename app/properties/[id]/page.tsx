@@ -5,6 +5,7 @@ import CleanerAssignment from "./CleanerAssignment";
 import AutoRefresh from "./AutoRefresh";
 import DeletePropertyButton from "./DeletePropertyButton";
 import ZoneChecklist from "./ZoneChecklist";
+import ZoneSettings from "./ZoneSettings";
 import LocalTime from "./LocalTime";
 import AppNav from "@/app/components/AppNav";
 
@@ -276,6 +277,12 @@ export default async function PropertyPage({
                 zoneSlug={zone.slug}
                 zoneName={zone.name}
                 items={zone.zone_checklist_items}
+              />
+              <ZoneSettings
+                propertyId={id}
+                zoneSlug={zone.slug}
+                taskDescription={zone.task_description}
+                requirePhoto={zone.require_photo}
               />
             </div>
           );

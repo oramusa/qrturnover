@@ -4,6 +4,29 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+// Vercel's serverless functions cap request bodies at 4.5MB, and a handful of
+// full-resolution phone photos blow past that easily. Downscaling client-side
+// keeps the whole zone's photos well under that limit.
+async function compressImage(file: File, maxDimension = 1600, quality = 0.75): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const width = Math.round(bitmap.width * scale);
+  const height = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+  ctx.drawImage(bitmap, 0, 0, width, height);
+
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+  if (!blob) return file;
+  const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+  return new File([blob], name, { type: "image/jpeg" });
+}
+
 export default function ScanForm({
   setId,
   zoneSlug,
@@ -33,10 +56,11 @@ export default function ScanForm({
     };
   }, [previewUrls]);
 
-  function addPhotos(files: FileList | null) {
+  async function addPhotos(files: FileList | null) {
     if (!files || files.length === 0) return;
-    setPhotos((prev) => [...prev, ...Array.from(files)]);
     setError(null);
+    const compressed = await Promise.all(Array.from(files).map((f) => compressImage(f)));
+    setPhotos((prev) => [...prev, ...compressed]);
   }
 
   function removePhoto(index: number) {
@@ -64,8 +88,15 @@ export default function ScanForm({
     const res = await fetch("/api/scan", { method: "POST", body: formData });
 
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "Something went wrong — try again.");
+      const text = await res.text();
+      let message: string | null = null;
+      try {
+        message = JSON.parse(text).error ?? null;
+      } catch {
+        // Non-JSON response (platform error page, timeout, etc.) — show it raw
+        // so we can tell those apart from our own handled errors.
+      }
+      setError(message ?? `Something went wrong (HTTP ${res.status}): ${text.slice(0, 300)}`);
       setStatus("error");
       return;
     }
@@ -119,7 +150,7 @@ export default function ScanForm({
         <input
           type="file"
           accept="image/*"
-          capture="environment"
+          multiple
           onChange={(e) => {
             addPhotos(e.target.files);
             e.target.value = "";
