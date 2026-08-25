@@ -128,14 +128,14 @@ export default function TurnoverRow({
                   </ul>
                 )}
                 {scan && scan.scan_event_photos.length > 0 && (
-                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                  <div className="flex gap-1.5 mt-1.5 flex-nowrap overflow-x-auto">
                     {scan.scan_event_photos.map((p, i) => (
                       <a
                         key={i}
                         href={p.photo_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative"
+                        className="relative shrink-0"
                         title={p.is_duplicate ? "Matches a photo uploaded before — possible reused photo" : undefined}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}

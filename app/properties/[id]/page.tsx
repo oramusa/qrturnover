@@ -270,14 +270,14 @@ export default async function PropertyPage({
                 </div>
               </div>
               {zonePhotos.length > 1 && (
-                <div className="flex gap-2 mt-2 flex-wrap">
+                <div className="flex gap-2 mt-2 flex-nowrap overflow-x-auto">
                   {zonePhotos.slice(1).map((p, i) => (
                     <a
                       key={i}
                       href={p.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative"
+                      className="relative shrink-0"
                       title={p.isDuplicate ? "Matches a photo uploaded before — possible reused photo" : undefined}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -367,14 +367,14 @@ export default async function PropertyPage({
                     </span>
                   </div>
                   {photos.length > 0 && (
-                    <div className="flex gap-2 mt-3 flex-wrap">
+                    <div className="flex gap-2 mt-3 flex-nowrap overflow-x-auto">
                       {photos.map((p, i) => (
                         <a
                           key={i}
                           href={p.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="relative block"
+                          className="relative block shrink-0"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
