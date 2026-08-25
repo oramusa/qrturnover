@@ -120,6 +120,9 @@ export async function POST(req: NextRequest) {
 
   if (photos.length > 0) {
     const rows: { photo_url: string; photo_hash: string; host_id: string; is_duplicate: boolean }[] = [];
+    // Tracks hashes already queued in this same submission, since those rows
+    // haven't been inserted yet and wouldn't otherwise show up in the DB check below.
+    const hashesInThisBatch = new Set<string>();
     for (const photo of photos) {
       const bytes = Buffer.from(await photo.arrayBuffer());
       const photoHash = createHash("sha256").update(bytes).digest("hex");
@@ -131,6 +134,8 @@ export async function POST(req: NextRequest) {
         .eq("photo_hash", photoHash)
         .limit(1)
         .maybeSingle();
+      const isDuplicate = !!existingMatch || hashesInThisBatch.has(photoHash);
+      hashesInThisBatch.add(photoHash);
 
       const ext = photo.name.split(".").pop() || "jpg";
       const path = `${sessionId}/${zoneSlug}-${Date.now()}-${crypto.randomUUID()}.${ext}`;
@@ -149,7 +154,7 @@ export async function POST(req: NextRequest) {
         photo_url: publicUrl.publicUrl,
         photo_hash: photoHash,
         host_id: property.host_id,
-        is_duplicate: !!existingMatch,
+        is_duplicate: isDuplicate,
       });
     }
 
