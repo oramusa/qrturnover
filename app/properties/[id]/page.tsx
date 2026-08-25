@@ -140,9 +140,9 @@ export default async function PropertyPage({
     <>
       <AppNav />
       <div className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center justify-between mt-2 mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold">{property.name}</h1>
+      <div className="flex items-start justify-between flex-wrap gap-3 mt-2 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold break-words">{property.name}</h1>
           {property.address && (
             <p className="text-sm text-muted">{property.address}</p>
           )}
