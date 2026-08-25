@@ -98,7 +98,7 @@ export default async function PropertyPage({
     .select(
       `id, status, started_at, completed_at, job_started_at, job_finished_at,
        cleaners ( name ),
-       scan_events ( zone_slug, scanned_at, cleaners ( name ), scan_event_photos ( photo_url ) )`
+       scan_events ( zone_slug, scanned_at, cleaners ( name ), scan_event_photos ( photo_url, is_duplicate ) )`
     )
     .eq("property_id", id)
     .order("started_at", { ascending: false })
@@ -112,7 +112,7 @@ export default async function PropertyPage({
   const activePhotosByZone = new Map(
     (activeSession?.scan_events ?? []).map((r) => [
       r.zone_slug,
-      (r.scan_event_photos ?? []).map((p) => p.photo_url),
+      (r.scan_event_photos ?? []).map((p) => ({ url: p.photo_url, isDuplicate: p.is_duplicate })),
     ])
   );
   const activeScannedAtByZone = new Map(
@@ -204,13 +204,24 @@ export default async function PropertyPage({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   {zonePhotos[0] && (
-                    <a href={zonePhotos[0]} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                    <a
+                      href={zonePhotos[0].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative shrink-0"
+                      title={zonePhotos[0].isDuplicate ? "Matches a photo uploaded before — possible reused photo" : undefined}
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={zonePhotos[0]}
+                        src={zonePhotos[0].url}
                         alt={`${zone.name} photo`}
                         className="w-10 h-10 rounded object-cover border"
                       />
+                      {zonePhotos[0].isDuplicate && (
+                        <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[8px] leading-none rounded-full px-1 py-0.5">
+                          reused
+                        </span>
+                      )}
                     </a>
                   )}
                   <div className="min-w-0">
@@ -260,14 +271,26 @@ export default async function PropertyPage({
               </div>
               {zonePhotos.length > 1 && (
                 <div className="flex gap-2 mt-2 flex-wrap">
-                  {zonePhotos.slice(1).map((url, i) => (
-                    <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                  {zonePhotos.slice(1).map((p, i) => (
+                    <a
+                      key={i}
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative"
+                      title={p.isDuplicate ? "Matches a photo uploaded before — possible reused photo" : undefined}
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={url}
+                        src={p.url}
                         alt={`${zone.name} photo ${i + 2}`}
                         className="w-10 h-10 rounded object-cover border"
                       />
+                      {p.isDuplicate && (
+                        <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[8px] leading-none rounded-full px-1 py-0.5">
+                          reused
+                        </span>
+                      )}
                     </a>
                   ))}
                 </div>
@@ -323,7 +346,11 @@ export default async function PropertyPage({
               const duration = formatDuration(s.job_started_at, s.job_finished_at);
               const cleanerName = (s.cleaners as unknown as { name: string } | null)?.name;
               const photos = (s.scan_events ?? []).flatMap((r) =>
-                (r.scan_event_photos ?? []).map((p) => ({ zoneSlug: r.zone_slug, url: p.photo_url }))
+                (r.scan_event_photos ?? []).map((p) => ({
+                  zoneSlug: r.zone_slug,
+                  url: p.photo_url,
+                  isDuplicate: p.is_duplicate,
+                }))
               );
               return (
                 <div key={s.id} className="border rounded-lg px-4 py-3 text-sm">
@@ -347,15 +374,24 @@ export default async function PropertyPage({
                           href={p.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block"
+                          className="relative block"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={p.url}
                             alt={`${zoneLabelBySlug.get(p.zoneSlug) ?? p.zoneSlug} photo`}
-                            title={zoneLabelBySlug.get(p.zoneSlug) ?? p.zoneSlug}
+                            title={
+                              p.isDuplicate
+                                ? "Matches a photo uploaded before — possible reused photo"
+                                : (zoneLabelBySlug.get(p.zoneSlug) ?? p.zoneSlug)
+                            }
                             className="w-14 h-14 rounded object-cover border"
                           />
+                          {p.isDuplicate && (
+                            <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[8px] leading-none rounded-full px-1 py-0.5">
+                              reused
+                            </span>
+                          )}
                         </a>
                       ))}
                     </div>

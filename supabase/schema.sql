@@ -495,6 +495,15 @@ create table if not exists public.scan_event_photos (
 
 create index if not exists idx_scan_event_photos_scan_event on public.scan_event_photos(scan_event_id);
 
+-- Nullable: only new uploads compute these, existing rows aren't backfilled.
+-- Lets us flag a photo whose bytes exactly match one already uploaded by the
+-- same host (any property), a sign a cleaner may be reusing an old photo.
+alter table public.scan_event_photos add column if not exists photo_hash text;
+alter table public.scan_event_photos add column if not exists host_id uuid references public.hosts(id) on delete cascade;
+alter table public.scan_event_photos add column if not exists is_duplicate boolean not null default false;
+
+create index if not exists idx_scan_event_photos_host_hash on public.scan_event_photos(host_id, photo_hash);
+
 alter table public.scan_event_photos enable row level security;
 
 drop policy if exists "hosts read scan event photos on own properties" on public.scan_event_photos;

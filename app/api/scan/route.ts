@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const { data: claim } = await supabase
     .from("property_set_claims")
-    .select("property_id, properties ( name, hosts ( email ) )")
+    .select("property_id, properties ( name, host_id, hosts ( email ) )")
     .eq("set_id", setId)
     .is("released_at", null)
     .maybeSingle();
@@ -111,14 +112,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message ?? "Couldn't save the scan" }, { status: 500 });
   }
 
+  const property = claim.properties as unknown as {
+    name: string;
+    host_id: string;
+    hosts: { email: string };
+  };
+
   if (photos.length > 0) {
-    const uploadedUrls: string[] = [];
+    const rows: { photo_url: string; photo_hash: string; host_id: string; is_duplicate: boolean }[] = [];
     for (const photo of photos) {
+      const bytes = Buffer.from(await photo.arrayBuffer());
+      const photoHash = createHash("sha256").update(bytes).digest("hex");
+
+      const { data: existingMatch } = await supabase
+        .from("scan_event_photos")
+        .select("id")
+        .eq("host_id", property.host_id)
+        .eq("photo_hash", photoHash)
+        .limit(1)
+        .maybeSingle();
+
       const ext = photo.name.split(".").pop() || "jpg";
       const path = `${sessionId}/${zoneSlug}-${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("scan-photos")
-        .upload(path, photo, { contentType: photo.type });
+        .upload(path, bytes, { contentType: photo.type });
 
       if (uploadError) {
         return NextResponse.json(
@@ -127,11 +145,16 @@ export async function POST(req: NextRequest) {
         );
       }
       const { data: publicUrl } = supabase.storage.from("scan-photos").getPublicUrl(path);
-      uploadedUrls.push(publicUrl.publicUrl);
+      rows.push({
+        photo_url: publicUrl.publicUrl,
+        photo_hash: photoHash,
+        host_id: property.host_id,
+        is_duplicate: !!existingMatch,
+      });
     }
 
     const { error: photoInsertError } = await supabase.from("scan_event_photos").insert(
-      uploadedUrls.map((photo_url) => ({ scan_event_id: scanEvent.id, photo_url }))
+      rows.map((r) => ({ ...r, scan_event_id: scanEvent.id }))
     );
     if (photoInsertError) {
       return NextResponse.json({ error: photoInsertError.message }, { status: 500 });
@@ -139,7 +162,6 @@ export async function POST(req: NextRequest) {
   }
 
   // Best-effort per-zone notification — never blocks the cleaner's flow if it fails.
-  const property = claim.properties as unknown as { name: string; hosts: { email: string } };
   if (property?.hosts?.email) {
     sendEmail({
       to: property.hosts.email,

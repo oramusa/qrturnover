@@ -11,7 +11,7 @@ type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] 
 type ScanRecord = {
   zone_slug: string;
   scanned_at: string;
-  scan_event_photos: { photo_url: string }[];
+  scan_event_photos: { photo_url: string; is_duplicate: boolean }[];
   cleaners: { name: string } | null;
 };
 
@@ -130,13 +130,25 @@ export default function TurnoverRow({
                 {scan && scan.scan_event_photos.length > 0 && (
                   <div className="flex gap-1.5 mt-1.5 flex-wrap">
                     {scan.scan_event_photos.map((p, i) => (
-                      <a key={i} href={p.photo_url} target="_blank" rel="noopener noreferrer">
+                      <a
+                        key={i}
+                        href={p.photo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative"
+                        title={p.is_duplicate ? "Matches a photo uploaded before — possible reused photo" : undefined}
+                      >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={p.photo_url}
                           alt={`${zone.name} photo ${i + 1}`}
                           className="w-14 h-14 rounded object-cover border"
                         />
+                        {p.is_duplicate && (
+                          <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[8px] leading-none rounded-full px-1 py-0.5">
+                            reused
+                          </span>
+                        )}
                       </a>
                     ))}
                   </div>
