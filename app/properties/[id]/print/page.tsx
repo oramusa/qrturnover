@@ -75,6 +75,20 @@ export default async function PrintSheetPage({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={zone.qr} alt={`QR code for ${zone.name}`} className="w-32 h-32" />
             <p className="text-sm font-medium mt-2">{zone.name}</p>
+            <div className="flex items-center gap-2 mt-1 print:hidden">
+              <a
+                href={`/api/qr/${claim!.set_id}/${zone.slug}?format=png`}
+                className="text-xs text-muted underline"
+              >
+                PNG
+              </a>
+              <a
+                href={`/api/qr/${claim!.set_id}/${zone.slug}?format=svg`}
+                className="text-xs text-muted underline"
+              >
+                SVG
+              </a>
+            </div>
           </div>
         ))}
       </div>
