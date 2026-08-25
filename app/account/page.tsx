@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/app/components/AppNav";
 import BillingCard from "@/app/dashboard/BillingCard";
+import MailingAddressForm from "./MailingAddressForm";
 
 export default async function AccountPage({
   searchParams,
@@ -15,7 +16,7 @@ export default async function AccountPage({
 
   const { data: host, error: hostError } = await supabase
     .from("hosts")
-    .select("subscription_status, trial_ends_at")
+    .select("subscription_status, trial_ends_at, mailing_address")
     .eq("id", user!.id)
     .single();
 
@@ -50,6 +51,9 @@ export default async function AccountPage({
           <p className="text-xs text-muted">Email</p>
           <p className="text-sm mt-1">{user?.email}</p>
         </div>
+
+        <h2 className="text-sm font-medium mb-2">Mailing address</h2>
+        <MailingAddressForm initialAddress={host?.mailing_address ?? null} />
 
         <h2 className="text-sm font-medium mb-2">Billing</h2>
         <BillingCard

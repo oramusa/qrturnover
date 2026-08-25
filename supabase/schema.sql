@@ -8,8 +8,14 @@ create table if not exists public.hosts (
   stripe_customer_id text,
   subscription_status text default 'trialing', -- trialing | active | past_due | canceled
   trial_ends_at timestamptz default (now() + interval '14 days'),
+  -- Where to physically mail printed QR sets during beta — distinct from any
+  -- property's own address, since a host may want deliveries at one place
+  -- regardless of how many properties they run.
+  mailing_address text,
   created_at timestamptz default now()
 );
+
+alter table public.hosts add column if not exists mailing_address text;
 
 create table if not exists public.properties (
   id uuid primary key default gen_random_uuid(),

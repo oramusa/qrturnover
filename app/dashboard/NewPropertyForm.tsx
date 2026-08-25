@@ -86,6 +86,12 @@ export default function NewPropertyForm() {
       }
     }
 
+    fetch("/api/notify-new-property", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ propertyId: property.id }),
+    }).catch(() => {});
+
     setLoading(false);
     router.push(`/properties/${property.id}`);
   }
