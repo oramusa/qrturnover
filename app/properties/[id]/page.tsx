@@ -218,7 +218,7 @@ export default async function PropertyPage({
                         className="w-10 h-10 rounded object-cover border"
                       />
                       {zonePhotos[0].isDuplicate && (
-                        <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[8px] leading-none rounded-full px-1 py-0.5">
+                        <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
                           reused
                         </span>
                       )}
@@ -287,7 +287,7 @@ export default async function PropertyPage({
                         className="w-10 h-10 rounded object-cover border"
                       />
                       {p.isDuplicate && (
-                        <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[8px] leading-none rounded-full px-1 py-0.5">
+                        <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
                           reused
                         </span>
                       )}
@@ -388,7 +388,7 @@ export default async function PropertyPage({
                             className="w-14 h-14 rounded object-cover border"
                           />
                           {p.isDuplicate && (
-                            <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[8px] leading-none rounded-full px-1 py-0.5">
+                            <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
                               reused
                             </span>
                           )}
