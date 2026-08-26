@@ -415,7 +415,10 @@ create policy "hosts read scan events on own properties" on public.scan_events
 -- Atomically claims the lowest-id unclaimed set for a property the caller
 -- actually owns. FOR UPDATE SKIP LOCKED means two concurrent property
 -- creations never race for the same set — a locked row is simply skipped in
--- favor of the next available one, rather than blocking.
+-- favor of the next available one, rather than blocking. If the pre-provisioned
+-- pool is empty, auto-generates a new set with the standard zone list instead
+-- of blocking the host — QR images are generated on demand from (set_id,
+-- zone_slug), so sets are no longer tied to a physically pre-printed batch.
 create or replace function public.claim_next_qr_set(p_property_id uuid)
 returns text
 language plpgsql
@@ -424,6 +427,7 @@ as $$
 declare
   v_set_id text;
   v_owner uuid;
+  v_next_num int;
 begin
   select host_id into v_owner from public.properties where id = p_property_id;
   if v_owner is null then
@@ -445,10 +449,23 @@ begin
   limit 1;
 
   if v_set_id is null then
-    raise exception 'No unclaimed QR sets available';
-  end if;
+    select coalesce(max((regexp_match(id, '^SET_(\d+)$'))[1]::int), 0) + 1
+      into v_next_num
+      from public.qr_sets;
 
-  update public.qr_sets set status = 'claimed' where id = v_set_id;
+    v_set_id := 'SET_' || lpad(v_next_num::text, 3, '0');
+
+    insert into public.qr_sets (id, status) values (v_set_id, 'claimed');
+
+    insert into public.qr_set_zones (set_id, zone_slug, zone_label, sort_order) values
+      (v_set_id, 'bathroom_1', 'Bathroom', 0),
+      (v_set_id, 'bedroom_1', 'Bedroom', 1),
+      (v_set_id, 'kitchen', 'Kitchen', 2),
+      (v_set_id, 'living_room', 'Living Room', 3),
+      (v_set_id, 'entryway', 'Entryway', 4);
+  else
+    update public.qr_sets set status = 'claimed' where id = v_set_id;
+  end if;
 
   insert into public.property_set_claims (property_id, set_id)
   values (p_property_id, v_set_id);
