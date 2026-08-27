@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
+import { formatMailingAddress } from "@/lib/address";
 
 // Fire-and-forget admin notification for a zone added after the property's
 // initial creation (see /api/notify-new-property for the initial-batch case).
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   const { data: property } = await supabase
     .from("properties")
-    .select("name, hosts ( email, mailing_address )")
+    .select("name, hosts ( email, address_line, city, state, zip_code, country )")
     .eq("id", propertyId)
     .single();
 
@@ -29,7 +30,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Property or zone not found" }, { status: 404 });
   }
 
-  const host = property.hosts as unknown as { email: string; mailing_address: string | null };
+  const host = property.hosts as unknown as {
+    email: string;
+    address_line: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    country: string | null;
+  };
   const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "oramusa@gmail.com";
 
@@ -41,7 +49,7 @@ export async function POST(req: NextRequest) {
       `Property: ${property.name}`,
       `QR set: ${setId}`,
       `New zone: ${zone.zone_label} (${zoneSlug})`,
-      `Mailing address: ${host?.mailing_address?.trim() || "(not provided yet)"}`,
+      `Mailing address:\n  ${formatMailingAddress(host)}`,
       "",
       `Download PNG: ${base}/api/qr/${setId}/${zoneSlug}?format=png`,
       `Download SVG: ${base}/api/qr/${setId}/${zoneSlug}?format=svg`,

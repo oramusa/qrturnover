@@ -16,7 +16,7 @@ export default async function AccountPage({
 
   const { data: host, error: hostError } = await supabase
     .from("hosts")
-    .select("subscription_status, trial_ends_at, mailing_address")
+    .select("subscription_status, trial_ends_at, address_line, city, state, zip_code, country")
     .eq("id", user!.id)
     .single();
 
@@ -53,7 +53,15 @@ export default async function AccountPage({
         </div>
 
         <h2 className="text-sm font-medium mb-2">Mailing address</h2>
-        <MailingAddressForm initialAddress={host?.mailing_address ?? null} />
+        <MailingAddressForm
+          initialAddress={{
+            address_line: host?.address_line ?? null,
+            city: host?.city ?? null,
+            state: host?.state ?? null,
+            zip_code: host?.zip_code ?? null,
+            country: host?.country ?? null,
+          }}
+        />
 
         <h2 className="text-sm font-medium mb-2">Billing</h2>
         <BillingCard

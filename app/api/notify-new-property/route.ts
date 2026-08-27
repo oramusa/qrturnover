@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
+import { formatMailingAddress, hasMailingAddress } from "@/lib/address";
 
 // Fire-and-forget admin notification — never blocks property creation, so
 // this intentionally always returns 200-ish even on a soft failure. The
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   const { data: property } = await supabase
     .from("properties")
-    .select("name, host_id, hosts ( email, mailing_address )")
+    .select("name, host_id, hosts ( email, address_line, city, state, zip_code, country )")
     .eq("id", propertyId)
     .single();
 
@@ -37,7 +38,14 @@ export async function POST(req: NextRequest) {
     .eq("set_id", claim.set_id)
     .order("sort_order", { ascending: true });
 
-  const host = property.hosts as unknown as { email: string; mailing_address: string | null };
+  const host = property.hosts as unknown as {
+    email: string;
+    address_line: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    country: string | null;
+  };
   const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "oramusa@gmail.com";
 
@@ -57,13 +65,13 @@ export async function POST(req: NextRequest) {
       `Host: ${host?.email ?? "unknown"}`,
       `Property: ${property.name}`,
       `QR set: ${claim.set_id}`,
-      `Mailing address: ${host?.mailing_address?.trim() || "(not provided yet)"}`,
+      `Mailing address:\n  ${formatMailingAddress(host)}`,
       "",
       ...zoneLines,
     ].join("\n"),
   }).catch(() => {});
 
-  if (!host?.mailing_address?.trim() && host?.email) {
+  if (!hasMailingAddress(host) && host?.email) {
     await sendEmail({
       to: host.email,
       subject: "Add your mailing address to receive your printed QR codes",
