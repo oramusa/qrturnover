@@ -63,5 +63,18 @@ export async function POST(req: NextRequest) {
     ].join("\n"),
   }).catch(() => {});
 
+  if (!host?.mailing_address?.trim() && host?.email) {
+    await sendEmail({
+      to: host.email,
+      subject: "Add your mailing address to receive your printed QR codes",
+      text: [
+        `Thanks for creating "${property.name}"!`,
+        "",
+        "We print and mail your QR codes for you, but we don't have a mailing address on file yet.",
+        `Add one here: ${base}/account`,
+      ].join("\n"),
+    }).catch(() => {});
+  }
+
   return NextResponse.json({ ok: true });
 }
