@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
       "",
       `Download PNG: ${base}/api/qr/${setId}/${zoneSlug}?format=png`,
       `Download SVG: ${base}/api/qr/${setId}/${zoneSlug}?format=svg`,
-      `Print sheet: ${base}/properties/${propertyId}/print`,
     ].join("\n"),
   }).catch(() => {});
 
