@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { zoneQrDataUrl } from "@/lib/qrcode";
 import PrintButton from "./PrintButton";
 import EmailQrForm from "./EmailQrForm";
+import AppNav from "@/app/components/AppNav";
 
 export default async function PrintSheetPage({
   params,
@@ -42,7 +43,11 @@ export default async function PrintSheetPage({
   );
 
   return (
-    <div className="max-w-3xl mx-auto p-6 print:p-0">
+    <>
+      <div className="print:hidden">
+        <AppNav />
+      </div>
+      <div className="max-w-3xl mx-auto p-6 print:p-0">
       <Link
         href={`/properties/${id}`}
         className="text-sm text-muted underline print:hidden"
@@ -101,6 +106,7 @@ export default async function PrintSheetPage({
           {claim ? "This QR set has no zones defined." : "No QR set claimed for this property yet."}
         </p>
       )}
-    </div>
+      </div>
+    </>
   );
 }
