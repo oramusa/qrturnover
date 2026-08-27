@@ -13,10 +13,12 @@ function slugify(label: string) {
 }
 
 export default function AddZoneForm({
+  propertyId,
   setId,
   existingSlugs,
   nextSortOrder,
 }: {
+  propertyId: string;
   setId: string;
   existingSlugs: string[];
   nextSortOrder: number;
@@ -54,6 +56,13 @@ export default function AddZoneForm({
       setError(error.message);
       return;
     }
+
+    fetch("/api/notify-new-zone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ propertyId, setId, zoneSlug: slug }),
+    }).catch(() => {});
+
     setLabel("");
     setOpen(false);
     router.refresh();

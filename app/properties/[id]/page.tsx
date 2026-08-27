@@ -181,6 +181,7 @@ export default async function PropertyPage({
         {setId && (
           <div className="flex items-center gap-3">
             <AddZoneForm
+              propertyId={id}
               setId={setId}
               existingSlugs={zones.map((z) => z.slug)}
               nextSortOrder={zones.length}
