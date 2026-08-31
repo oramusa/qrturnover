@@ -32,16 +32,22 @@ export async function POST() {
     );
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    ui_mode: "embedded",
-    ...(host?.stripe_customer_id
-      ? { customer: host.stripe_customer_id }
-      : { customer_email: user.email }),
-    line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?checkout=success`,
-    metadata: { host_id: user.id },
-  });
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      ui_mode: "embedded",
+      ...(host?.stripe_customer_id
+        ? { customer: host.stripe_customer_id }
+        : { customer_email: user.email }),
+      line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?checkout=success`,
+      metadata: { host_id: user.id },
+    });
 
-  return NextResponse.json({ clientSecret: session.client_secret });
+    return NextResponse.json({ clientSecret: session.client_secret });
+  } catch (err) {
+    console.error("Failed to create checkout session", err);
+    const message = err instanceof Stripe.errors.StripeError ? err.message : "Couldn't start checkout.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
