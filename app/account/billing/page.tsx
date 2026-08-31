@@ -38,30 +38,38 @@ export default async function BillingPage() {
   let paymentMethod: Stripe.PaymentMethod | null = null;
   let invoices: Stripe.Invoice[] = [];
 
+  // A stored customer id can go stale if the Stripe account backing
+  // STRIPE_SECRET_KEY changes (e.g. switching from a sandbox/other account to
+  // a different live account) — Stripe then rejects it as "no such customer".
+  // Treat that as "no billing data yet" instead of crashing the page.
   if (host?.stripe_customer_id) {
-    const subs = await stripe.subscriptions.list({
-      customer: host.stripe_customer_id,
-      status: "all",
-      limit: 1,
-      expand: ["data.default_payment_method", "data.items.data.price"],
-    });
-    subscription = subs.data[0] ?? null;
-
-    if (subscription?.default_payment_method) {
-      paymentMethod = subscription.default_payment_method as Stripe.PaymentMethod;
-    } else {
-      const pms = await stripe.paymentMethods.list({
+    try {
+      const subs = await stripe.subscriptions.list({
         customer: host.stripe_customer_id,
-        type: "card",
+        status: "all",
+        limit: 1,
+        expand: ["data.default_payment_method", "data.items.data.price"],
       });
-      paymentMethod = pms.data[0] ?? null;
-    }
+      subscription = subs.data[0] ?? null;
 
-    const invoiceList = await stripe.invoices.list({
-      customer: host.stripe_customer_id,
-      limit: 12,
-    });
-    invoices = invoiceList.data;
+      if (subscription?.default_payment_method) {
+        paymentMethod = subscription.default_payment_method as Stripe.PaymentMethod;
+      } else {
+        const pms = await stripe.paymentMethods.list({
+          customer: host.stripe_customer_id,
+          type: "card",
+        });
+        paymentMethod = pms.data[0] ?? null;
+      }
+
+      const invoiceList = await stripe.invoices.list({
+        customer: host.stripe_customer_id,
+        limit: 12,
+      });
+      invoices = invoiceList.data;
+    } catch (err) {
+      console.error("Failed to load Stripe billing data for", host.stripe_customer_id, err);
+    }
   }
 
   const item = subscription?.items.data[0];
