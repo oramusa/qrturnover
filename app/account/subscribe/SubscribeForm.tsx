@@ -69,16 +69,29 @@ export default function SubscribeForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-lg p-4 bg-white text-gray-900">
-      <div ref={containerRef} />
-      {!ready && !error && <p className="text-sm text-gray-500">Loading...</p>}
-      {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+    <form onSubmit={handleSubmit}>
+      <div ref={containerRef} className="min-h-[1px]" />
+
+      {!ready && !error && (
+        <div className="space-y-3 animate-pulse">
+          <div className="h-10 rounded-md bg-gray-100" />
+          <div className="h-10 rounded-md bg-gray-100" />
+          <div className="h-10 rounded-md bg-gray-100 w-2/3" />
+        </div>
+      )}
+
+      {error && (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mt-3">
+          {error}
+        </p>
+      )}
+
       <button
         type="submit"
         disabled={!ready || submitting}
-        className="w-full bg-black text-white text-sm rounded py-2.5 mt-4 disabled:opacity-50"
+        className="w-full bg-black text-white text-sm font-medium rounded-lg py-3 mt-5 transition hover:bg-gray-800 disabled:opacity-50 disabled:hover:bg-black"
       >
-        {submitting ? "Subscribing..." : "Subscribe"}
+        {submitting ? "Subscribing…" : "Subscribe"}
       </button>
     </form>
   );
