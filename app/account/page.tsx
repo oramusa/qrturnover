@@ -1,7 +1,14 @@
+import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/app/components/AppNav";
 import BillingCard from "@/app/dashboard/BillingCard";
 import MailingAddressForm from "./MailingAddressForm";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+function formatMoney(amountCents: number, currency: string) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amountCents / 100);
+}
 
 export default async function AccountPage({
   searchParams,
@@ -23,6 +30,11 @@ export default async function AccountPage({
   if (hostError) {
     console.error("Failed to load host billing info:", hostError);
   }
+
+  const price = await stripe.prices.retrieve(process.env.STRIPE_PRICE_ID!);
+  const priceLabel = `${formatMoney(price.unit_amount ?? 0, price.currency)}${
+    price.recurring ? `/${price.recurring.interval}` : ""
+  }`;
 
   const now = new Date();
   const trialDaysLeft = host?.trial_ends_at
@@ -67,6 +79,7 @@ export default async function AccountPage({
         <BillingCard
           subscriptionStatus={host?.subscription_status ?? null}
           trialDaysLeft={trialDaysLeft}
+          priceLabel={priceLabel}
         />
       </div>
     </>

@@ -3,9 +3,11 @@ import Link from "next/link";
 export default function BillingCard({
   subscriptionStatus,
   trialDaysLeft,
+  priceLabel,
 }: {
   subscriptionStatus: string | null;
   trialDaysLeft: number | null;
+  priceLabel: string;
 }) {
   const isActive = subscriptionStatus === "active";
   const isPastDue = subscriptionStatus === "past_due";
@@ -15,10 +17,10 @@ export default function BillingCard({
   return (
     <div className="border rounded-lg p-4 mb-6 flex items-center justify-between gap-4">
       <div>
-        {isActive && <p className="text-sm font-medium">Subscribed — $7/mo</p>}
+        {isActive && <p className="text-sm font-medium">Subscribed — {priceLabel}</p>}
         {subscriptionStatus === "trialing" && trialDaysLeft !== null && (
           <p className="text-sm font-medium">
-            Trial ends in {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} — $7/mo after
+            Trial ends in {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} — {priceLabel} after
           </p>
         )}
         {needsAttention && (
@@ -31,7 +33,7 @@ export default function BillingCard({
         {!isActive &&
           !(subscriptionStatus === "trialing" && trialDaysLeft !== null) &&
           !needsAttention && (
-            <p className="text-sm font-medium">Subscribe to QRTurnover — $7/mo</p>
+            <p className="text-sm font-medium">Subscribe to QRTurnover — {priceLabel}</p>
           )}
       </div>
       {managingExisting ? (
