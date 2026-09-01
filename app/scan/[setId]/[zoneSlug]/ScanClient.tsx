@@ -164,7 +164,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
                     load();
                   }}
                 />
-                <span className={item.completed ? "line-through text-muted" : ""}>
+                <span className={item.completed ? "line-through text-gray-500" : ""}>
                   {item.label}
                 </span>
               </label>

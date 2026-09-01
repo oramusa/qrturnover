@@ -122,7 +122,7 @@ export default function NewPropertyForm() {
         onChange={(e) => setAddress(e.target.value)}
         className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
       />
-      <p className="text-xs text-muted">
+      <p className="text-xs text-gray-500">
         The next available QR sticker set will be automatically assigned to this property.
       </p>
       {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -137,7 +137,7 @@ export default function NewPropertyForm() {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-sm text-muted"
+          className="text-sm text-gray-500"
         >
           Cancel
         </button>

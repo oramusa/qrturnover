@@ -87,7 +87,7 @@ export default function NewCleanerForm() {
         >
           {loading ? "Adding..." : "Add cleaner"}
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="text-sm text-muted">
+        <button type="button" onClick={() => setOpen(false)} className="text-sm text-gray-500">
           Cancel
         </button>
       </div>
