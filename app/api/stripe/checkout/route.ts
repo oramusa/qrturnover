@@ -35,7 +35,7 @@ export async function POST() {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      ui_mode: "embedded",
+      ui_mode: "embedded_page",
       ...(host?.stripe_customer_id
         ? { customer: host.stripe_customer_id }
         : { customer_email: user.email }),
