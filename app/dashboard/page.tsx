@@ -69,11 +69,11 @@ export default async function DashboardPage() {
               <Link
                 key={property.id}
                 href={`/properties/${property.id}`}
-                className="border rounded-lg p-4 hover:bg-gray-50 hover:text-gray-900 flex items-center justify-between"
+                className="group border rounded-lg p-4 hover:bg-gray-50 hover:text-gray-900 flex items-center justify-between"
               >
                 <div>
                   <h2 className="font-medium">{property.name}</h2>
-                  <p className="text-sm text-muted">
+                  <p className="text-sm text-muted group-hover:text-gray-500">
                     {zoneCount} zone{zoneCount === 1 ? "" : "s"}
                     {property.address ? ` · ${property.address}` : ""}
                   </p>

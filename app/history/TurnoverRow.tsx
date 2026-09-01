@@ -63,12 +63,12 @@ export default function TurnoverRow({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full text-left px-4 py-3 hover:bg-gray-50 hover:text-gray-900"
+        className="group w-full text-left px-4 py-3 hover:bg-gray-50 hover:text-gray-900"
       >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="font-medium">{propertyName}</p>
-            <p className="text-muted text-xs mt-0.5">
+            <p className="text-muted group-hover:text-gray-500 text-xs mt-0.5">
               <LocalTime
                 iso={startedAt}
                 options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }}
