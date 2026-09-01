@@ -44,19 +44,41 @@ export async function POST() {
       items: [{ price: process.env.STRIPE_PRICE_ID! }],
       payment_behavior: "default_incomplete",
       payment_settings: { save_default_payment_method: "on_subscription" },
-      expand: ["latest_invoice.payment_intent"],
+      // Recent Stripe API versions moved the client secret from
+      // latest_invoice.payment_intent to latest_invoice.confirmation_secret —
+      // expand both and use whichever the account's pinned version returns.
+      expand: ["latest_invoice.payment_intent", "latest_invoice.confirmation_secret"],
       metadata: { host_id: user.id },
     });
 
-    const invoice = subscription.latest_invoice as Stripe.Invoice & {
-      payment_intent: Stripe.PaymentIntent;
-    };
-    const clientSecret = invoice.payment_intent.client_secret;
+    const invoice = subscription.latest_invoice as
+      | (Stripe.Invoice & {
+          payment_intent?: Stripe.PaymentIntent | string | null;
+          confirmation_secret?: { client_secret: string } | null;
+        })
+      | null;
+
+    const clientSecret =
+      (typeof invoice?.payment_intent === "object" ? invoice.payment_intent?.client_secret : undefined) ??
+      invoice?.confirmation_secret?.client_secret;
+
+    if (!clientSecret) {
+      console.error("Subscription created but no client secret found on invoice", invoice);
+      return NextResponse.json(
+        { error: "Couldn't start checkout — no payment step was returned. Please try again." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ clientSecret });
   } catch (err) {
     console.error("Failed to create subscription", err);
-    const message = err instanceof Stripe.errors.StripeError ? err.message : "Couldn't start checkout.";
+    const message =
+      err instanceof Stripe.errors.StripeError
+        ? err.message
+        : err instanceof Error
+          ? `Unexpected error: ${err.message}`
+          : "Couldn't start checkout.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
