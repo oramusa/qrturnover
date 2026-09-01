@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
@@ -75,6 +76,17 @@ export default function SignupPage() {
           {loading ? "Creating account..." : "Start free trial"}
         </button>
       </form>
+      <p className="text-xs text-muted mt-4">
+        By creating an account, you agree to our{" "}
+        <Link href="/terms" className="underline">
+          Terms of Use
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
       <p className="text-sm text-muted mt-4">
         Already have an account? <a href="/login" className="underline">Log in</a>
       </p>

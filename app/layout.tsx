@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import RegisterServiceWorker from "./RegisterServiceWorker";
+import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: "QRTurnover — cleaning verification for STR hosts",
@@ -28,7 +29,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        {children}
+        <div className="flex-1 flex flex-col">{children}</div>
+        <Footer />
         <RegisterServiceWorker />
       </body>
     </html>
