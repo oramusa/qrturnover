@@ -16,6 +16,7 @@ export default function TemplateCard({
 }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -53,6 +54,80 @@ export default function TemplateCard({
       setError(error.message);
       return;
     }
+    router.refresh();
+  }
+
+  async function handleApplyToExisting() {
+    setError(null);
+    if (items.length === 0) {
+      alert("Add at least one item to this template before applying it.");
+      return;
+    }
+    if (
+      !confirm(
+        `Apply "${roomType}" to every existing zone named "${roomType}"? This replaces that zone's current checklist items with this template's ${items.length} item${items.length === 1 ? "" : "s"} — any custom items already there will be removed.`
+      )
+    ) {
+      return;
+    }
+
+    setApplying(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data: properties } = await supabase
+      .from("properties")
+      .select("id")
+      .eq("host_id", user!.id);
+    const propertyIds = (properties ?? []).map((p) => p.id);
+
+    const { data: claims } = propertyIds.length
+      ? await supabase
+          .from("property_set_claims")
+          .select("property_id, set_id")
+          .in("property_id", propertyIds)
+          .is("released_at", null)
+      : { data: [] as { property_id: string; set_id: string }[] };
+
+    const setIds = Array.from(new Set((claims ?? []).map((c) => c.set_id)));
+    const propertyIdBySetId = new Map((claims ?? []).map((c) => [c.set_id, c.property_id]));
+
+    const { data: zones } = setIds.length
+      ? await supabase
+          .from("qr_set_zones")
+          .select("set_id, zone_slug, zone_label")
+          .in("set_id", setIds)
+      : { data: [] as { set_id: string; zone_slug: string; zone_label: string }[] };
+
+    const matches = (zones ?? [])
+      .filter((z) => z.zone_label.toLowerCase() === roomType.toLowerCase())
+      .map((z) => ({ propertyId: propertyIdBySetId.get(z.set_id)!, zoneSlug: z.zone_slug }));
+
+    for (const { propertyId, zoneSlug } of matches) {
+      await supabase
+        .from("zone_checklist_items")
+        .delete()
+        .eq("property_id", propertyId)
+        .eq("zone_slug", zoneSlug);
+
+      await supabase.from("zone_checklist_items").insert(
+        items.map((item) => ({
+          property_id: propertyId,
+          zone_slug: zoneSlug,
+          label: item.label,
+          sort_order: item.sort_order,
+        }))
+      );
+    }
+
+    setApplying(false);
+    alert(
+      matches.length === 0
+        ? `No existing zones named "${roomType}" were found.`
+        : `Applied to ${matches.length} zone${matches.length === 1 ? "" : "s"}.`
+    );
     router.refresh();
   }
 
@@ -94,6 +169,14 @@ export default function TemplateCard({
             onDelete={handleDelete}
             disabled={deleting}
           />
+          <button
+            type="button"
+            onClick={handleApplyToExisting}
+            disabled={applying || deleting}
+            className="text-xs text-muted hover:text-gray-900 mt-3 disabled:opacity-50"
+          >
+            {applying ? "Applying..." : "Apply to existing properties"}
+          </button>
           {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </div>
       )}
