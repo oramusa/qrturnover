@@ -161,7 +161,7 @@ export default function TemplateCard({
         </button>
       </div>
       {open && (
-        <div className="mt-3">
+        <div className="mt-3 border rounded-lg p-3 bg-gray-50 text-gray-900">
           <ChecklistItemsEditor
             items={items}
             onAdd={handleAdd}
@@ -173,7 +173,7 @@ export default function TemplateCard({
             type="button"
             onClick={handleApplyToExisting}
             disabled={applying || deleting}
-            className="text-xs text-muted hover:text-gray-900 mt-3 disabled:opacity-50"
+            className="text-xs text-gray-500 hover:text-gray-900 mt-3 disabled:opacity-50"
           >
             {applying ? "Applying..." : "Apply to existing properties"}
           </button>
