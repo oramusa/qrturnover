@@ -15,10 +15,14 @@ function safeRedirectTarget(raw: string | null): string {
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(
+    searchParams.get("error") === "confirmation-failed"
+      ? "That confirmation link didn't work — it may have expired. Try signing in, or sign up again to get a new one."
+      : null
+  );
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
