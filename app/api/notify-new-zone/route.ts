@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     country: string | null;
   };
   const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "oramusa@gmail.com";
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "admin@qrturnover.com";
 
   await sendEmail({
     to: adminEmail,

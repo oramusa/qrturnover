@@ -108,8 +108,8 @@ export default function TermsPage() {
           <h2 className="font-medium mb-2">11. Contact</h2>
           <p>
             Questions about these terms? Email{" "}
-            <a href="mailto:oramusa@gmail.com" className="underline">
-              oramusa@gmail.com
+            <a href="mailto:admin@qrturnover.com" className="underline">
+              admin@qrturnover.com
             </a>
             .
           </p>

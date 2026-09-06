@@ -129,8 +129,8 @@ export default function PrivacyPage() {
           <h2 className="font-medium mb-2">10. Contact</h2>
           <p>
             Questions about this policy or your data? Email{" "}
-            <a href="mailto:oramusa@gmail.com" className="underline">
-              oramusa@gmail.com
+            <a href="mailto:admin@qrturnover.com" className="underline">
+              admin@qrturnover.com
             </a>
             .
           </p>
