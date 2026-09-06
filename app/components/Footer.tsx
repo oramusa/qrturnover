@@ -6,6 +6,9 @@ export default function Footer() {
       <div className="max-w-4xl mx-auto px-6 flex items-center justify-between text-xs text-muted">
         <span>&copy; {new Date().getFullYear()} QRTurnover</span>
         <div className="flex items-center gap-4">
+          <Link href="/contact" className="hover:underline">
+            Contact
+          </Link>
           <Link href="/terms" className="hover:underline">
             Terms of Use
           </Link>

@@ -7,10 +7,12 @@ export async function sendEmail({
   to,
   subject,
   text,
+  replyTo,
 }: {
   to: string;
   subject: string;
   text: string;
+  replyTo?: string;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.NOTIFICATION_FROM_EMAIL || "notifications@qrturnover.app";
@@ -27,7 +29,7 @@ export async function sendEmail({
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from, to, subject, text }),
+      body: JSON.stringify({ from, to, subject, text, ...(replyTo ? { reply_to: replyTo } : {}) }),
     });
   } catch (err) {
     // Notifications are best-effort — a failed email should never break the
