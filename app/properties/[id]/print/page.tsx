@@ -55,11 +55,13 @@ export default async function PrintSheetPage({
         &larr; Back to property
       </Link>
 
-      <div className="flex items-center justify-between mt-2 mb-6 print:hidden">
+      <div className="flex items-center gap-3 mt-4 mb-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="QRTurnover" className="w-10 h-10 object-contain" />
         <h1 className="text-xl font-semibold">
           Print QR codes — {property?.name}
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto print:hidden">
           <EmailQrForm propertyId={id} />
           <PrintButton />
         </div>
