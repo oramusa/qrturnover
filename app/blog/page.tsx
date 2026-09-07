@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PublicNav from "@/app/components/PublicNav";
 
 export const metadata = { title: "Blog — QRTurnover" };
 
@@ -11,6 +12,8 @@ const POSTS = [
 
 export default function BlogIndexPage() {
   return (
+    <>
+    <PublicNav />
     <div className="max-w-2xl mx-auto p-6 py-12">
       <Link href="/" className="text-sm text-muted underline">
         &larr; Back
@@ -27,5 +30,6 @@ export default function BlogIndexPage() {
         ))}
       </ul>
     </div>
+    </>
   );
 }

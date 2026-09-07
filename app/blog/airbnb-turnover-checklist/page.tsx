@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PublicNav from "@/app/components/PublicNav";
 
 export const metadata = {
   title: "Airbnb Turnover Checklist: How to Systemize Your Cleaning Process — QRTurnover",
@@ -6,6 +7,8 @@ export const metadata = {
 
 export default function AirbnbTurnoverChecklistPost() {
   return (
+    <>
+    <PublicNav />
     <div className="max-w-prose mx-auto p-6 py-12">
       <Link href="/blog" className="text-sm text-muted underline">
         &larr; Back to blog
@@ -145,5 +148,6 @@ export default function AirbnbTurnoverChecklistPost() {
         </div>
       </article>
     </div>
+    </>
   );
 }
