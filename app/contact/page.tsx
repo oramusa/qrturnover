@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -33,14 +34,20 @@ export default function ContactPage() {
     return (
       <div className="mx-auto max-w-sm mt-24 p-6 text-center">
         <h1 className="text-2xl font-semibold mb-4">Message sent</h1>
-        <p className="text-sm text-muted">Thanks for reaching out — we&apos;ll get back to you soon.</p>
+        <p className="text-sm text-muted mb-6">Thanks for reaching out — we&apos;ll get back to you soon.</p>
+        <Link href="/" className="text-sm underline">
+          &larr; Back to QRTurnover
+        </Link>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-sm mt-24 p-6">
-      <h1 className="text-2xl font-semibold mb-2">Contact us</h1>
+      <Link href="/" className="text-sm text-muted underline">
+        &larr; Back
+      </Link>
+      <h1 className="text-2xl font-semibold mt-4 mb-2">Contact us</h1>
       <p className="text-sm text-muted mb-6">
         Questions, feedback, or something not working? Send us a message.
       </p>
