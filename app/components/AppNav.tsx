@@ -16,9 +16,7 @@ export default function AppNav({
   return (
     <header className="border-b border-gray-800">
       <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-icon.png" alt="" className="w-7 h-7 object-contain" />
+        <Link href="/dashboard" className="font-semibold tracking-tight">
           QRTurnover
         </Link>
         <nav className="flex items-center gap-1 text-sm">
