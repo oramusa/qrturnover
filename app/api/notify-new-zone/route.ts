@@ -56,5 +56,19 @@ export async function POST(req: NextRequest) {
     ].join("\n"),
   }).catch(() => {});
 
+  if (host?.email) {
+    await sendEmail({
+      to: host.email,
+      subject: `Your QR code for "${zone.zone_label}" — ${property.name}`,
+      text: [
+        `Here's the QR code for the new zone you added, ready to download and print:`,
+        "",
+        `${zone.zone_label} (${zoneSlug}):`,
+        `  PNG: ${base}/api/qr/${setId}/${zoneSlug}?format=png`,
+        `  SVG: ${base}/api/qr/${setId}/${zoneSlug}?format=svg`,
+      ].join("\n"),
+    }).catch(() => {});
+  }
+
   return NextResponse.json({ ok: true });
 }

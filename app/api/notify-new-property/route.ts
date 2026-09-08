@@ -71,15 +71,21 @@ export async function POST(req: NextRequest) {
     ].join("\n"),
   }).catch(() => {});
 
-  if (!hasMailingAddress(host) && host?.email) {
+  if (host?.email) {
     await sendEmail({
       to: host.email,
-      subject: "Add your mailing address to receive your printed QR codes",
+      subject: `Your QR codes for "${property.name}"`,
       text: [
-        `Thanks for creating "${property.name}"!`,
+        `Thanks for creating "${property.name}"! Here are your QR codes, ready to download and print:`,
         "",
-        "We print and mail your QR codes for you, but we don't have a mailing address on file yet.",
-        `Add one here: ${base}/account`,
+        ...zoneLines,
+        ...(hasMailingAddress(host)
+          ? []
+          : [
+              "",
+              "We can also print and mail a physical set for you — just add a mailing address:",
+              `${base}/account`,
+            ]),
       ].join("\n"),
     }).catch(() => {});
   }
