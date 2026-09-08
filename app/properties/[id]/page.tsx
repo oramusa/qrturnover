@@ -9,6 +9,7 @@ import ZoneSettings from "./ZoneSettings";
 import AddZoneForm from "./AddZoneForm";
 import LocalTime from "./LocalTime";
 import AppNav from "@/app/components/AppNav";
+import { getHostSetNumber } from "@/lib/setLabel";
 
 function formatDuration(startedAt: string | null, finishedAt: string | null) {
   if (!startedAt || !finishedAt) return null;
@@ -44,6 +45,7 @@ export default async function PropertyPage({
     .maybeSingle();
 
   const setId = claim?.set_id ?? null;
+  const hostSetNumber = setId ? await getHostSetNumber(supabase, user!.id, setId) : null;
 
   const { data: setZones } = setId
     ? await supabase
@@ -189,7 +191,7 @@ export default async function PropertyPage({
             <span className="flex items-center gap-1.5 text-xs text-muted">
               QR set
               <span className="font-mono bg-gray-100 text-gray-900 px-2 py-0.5 rounded-full">
-                {setId}
+                {hostSetNumber ? `Set #${hostSetNumber}` : setId}
               </span>
             </span>
           </div>

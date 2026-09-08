@@ -4,6 +4,7 @@ import { zoneQrDataUrl } from "@/lib/qrcode";
 import PrintButton from "./PrintButton";
 import EmailQrForm from "./EmailQrForm";
 import AppNav from "@/app/components/AppNav";
+import { getHostSetNumber } from "@/lib/setLabel";
 
 export default async function PrintSheetPage({
   params,
@@ -12,6 +13,9 @@ export default async function PrintSheetPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: property } = await supabase
     .from("properties")
@@ -25,6 +29,9 @@ export default async function PrintSheetPage({
     .eq("property_id", id)
     .is("released_at", null)
     .maybeSingle();
+
+  const hostSetNumber = claim ? await getHostSetNumber(supabase, user!.id, claim.set_id) : null;
+  const setLabel = hostSetNumber ? `Set #${hostSetNumber}` : claim?.set_id;
 
   const { data: zones } = claim
     ? await supabase
@@ -83,7 +90,7 @@ export default async function PrintSheetPage({
             <img src={zone.qr} alt={`QR code for ${zone.name}`} className="w-32 h-32" />
             <p className="text-sm font-medium mt-2">
               {zone.name}
-              {claim && <span className="font-normal text-muted"> / {claim.set_id}</span>}
+              {claim && <span className="font-normal text-muted"> / {setLabel}</span>}
             </p>
             <div className="flex items-center gap-2 mt-1 print:hidden">
               <a
