@@ -32,7 +32,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
     const url = cleanerId
       ? `/api/scan-session?setId=${setId}&zoneSlug=${zoneSlug}&cleanerId=${cleanerId}`
       : `/api/scan-session?setId=${setId}&zoneSlug=${zoneSlug}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       setLoadError(true);
       return;
@@ -48,6 +48,21 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
 
   useEffect(() => {
     load();
+
+    // A cleaner's scan link is often reopened via mobile browser
+    // back/forward-cache (bfcache) or an already-backgrounded tab, neither of
+    // which re-runs this effect — so a host's edit (task description, photo
+    // requirement, checklist) made while that page sat idle would never show
+    // up. Re-fetch whenever the page becomes visible/active again.
+    function handleVisible() {
+      if (document.visibilityState === "visible") load();
+    }
+    window.addEventListener("pageshow", handleVisible);
+    document.addEventListener("visibilitychange", handleVisible);
+    return () => {
+      window.removeEventListener("pageshow", handleVisible);
+      document.removeEventListener("visibilitychange", handleVisible);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setId, zoneSlug]);
 
