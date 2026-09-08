@@ -20,11 +20,13 @@ export default function ZoneSettings({
   const [require, setRequire] = useState(requirePhoto);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const router = useRouter();
 
   async function handleSave() {
     setSaving(true);
     setError(null);
+    setSaved(false);
     const supabase = createClient();
     const { error } = await supabase.from("property_zone_settings").upsert(
       {
@@ -40,6 +42,7 @@ export default function ZoneSettings({
       setError(error.message);
       return;
     }
+    setSaved(true);
     router.refresh();
   }
 
@@ -59,7 +62,10 @@ export default function ZoneSettings({
             <input
               type="text"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                setSaved(false);
+              }}
               placeholder="e.g. change sheets, restock towels"
               disabled={saving}
               className="block w-full text-sm mt-1 border rounded px-2 py-1"
@@ -69,19 +75,25 @@ export default function ZoneSettings({
             <input
               type="checkbox"
               checked={require}
-              onChange={(e) => setRequire(e.target.checked)}
+              onChange={(e) => {
+                setRequire(e.target.checked);
+                setSaved(false);
+              }}
               disabled={saving}
             />
             Require photo before this zone can be marked done
           </label>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="text-xs bg-black text-white rounded px-3 py-1.5 disabled:opacity-50"
-          >
-            {saving ? "Saving..." : "Save"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="text-xs bg-black text-white rounded px-3 py-1.5 disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+            {saved && <span className="text-xs text-green-700">Saved!</span>}
+          </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
         </div>
       )}
