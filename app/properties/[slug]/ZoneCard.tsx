@@ -121,7 +121,6 @@ export default function ZoneCard({
           <ZoneChecklist
             propertyId={propertyId}
             zoneSlug={zone.slug}
-            zoneName={zone.name}
             items={zone.zone_checklist_items}
             forceOpen
           />
