@@ -56,10 +56,7 @@ export default function MailingAddressForm({ initialAddress }: { initialAddress:
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-lg p-4 mb-6 space-y-2">
-      <p className="text-xs text-muted mb-1">
-        Where printed QR sets should be shipped to you during beta testing.
-      </p>
+    <form onSubmit={handleSubmit} className="border border-gray-800 rounded-xl p-5 mb-6 space-y-3 bg-gray-950">
       <label className="block">
         <span className="text-xs text-muted">Street address</span>
         <input
@@ -71,7 +68,7 @@ export default function MailingAddressForm({ initialAddress }: { initialAddress:
           }}
           placeholder="123 Main St, Apt 4"
           disabled={saving}
-          className="w-full border rounded px-3 py-2 text-sm mt-1 bg-white text-gray-900"
+          className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
         />
       </label>
       <div className="grid grid-cols-2 gap-2">
@@ -85,7 +82,7 @@ export default function MailingAddressForm({ initialAddress }: { initialAddress:
               markDirty();
             }}
             disabled={saving}
-            className="w-full border rounded px-3 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           />
         </label>
         <label className="block">
@@ -98,7 +95,7 @@ export default function MailingAddressForm({ initialAddress }: { initialAddress:
               markDirty();
             }}
             disabled={saving}
-            className="w-full border rounded px-3 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           />
         </label>
         <label className="block">
@@ -111,7 +108,7 @@ export default function MailingAddressForm({ initialAddress }: { initialAddress:
               markDirty();
             }}
             disabled={saving}
-            className="w-full border rounded px-3 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           />
         </label>
         <label className="block">
@@ -124,7 +121,7 @@ export default function MailingAddressForm({ initialAddress }: { initialAddress:
               markDirty();
             }}
             disabled={saving}
-            className="w-full border rounded px-3 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           />
         </label>
       </div>
@@ -132,11 +129,11 @@ export default function MailingAddressForm({ initialAddress }: { initialAddress:
         <button
           type="submit"
           disabled={saving}
-          className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
+          className="bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg px-4 py-2.5 disabled:opacity-50"
         >
           {saving ? "Saving..." : "Save"}
         </button>
-        {saved && <span className="text-sm text-green-700">Saved!</span>}
+        {saved && <span className="text-sm text-green-400">Saved!</span>}
       </div>
       {error && <p className="text-red-600 text-sm">{error}</p>}
     </form>

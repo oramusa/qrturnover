@@ -15,8 +15,9 @@ export default function BillingCard({
   const managingExisting = isActive || isPastDue;
 
   return (
-    <div className="border rounded-lg p-4 mb-6 flex items-center justify-between gap-4">
+    <div className="border border-gray-800 rounded-xl p-5 mb-6 bg-gray-950">
       <div>
+        <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">QRTurnover plan</p>
         {isActive && <p className="text-sm font-medium">Subscribed — {priceLabel}</p>}
         {subscriptionStatus === "trialing" && trialDaysLeft !== null && (
           <p className="text-sm font-medium">
@@ -38,21 +39,23 @@ export default function BillingCard({
             <p className="text-sm font-medium">Subscribe to QRTurnover — {priceLabel}</p>
           )}
       </div>
+      <div className="mt-5 pt-4 border-t border-gray-800">
       {managingExisting ? (
         <Link
           href="/account/billing"
-          className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 shrink-0"
+          className="inline-block text-sm border border-gray-700 rounded-lg px-3 py-2 hover:border-gray-500 shrink-0"
         >
           {isPastDue ? "Update payment method" : "Manage subscription"}
         </Link>
       ) : (
         <Link
           href="/account/subscribe"
-          className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 shrink-0"
+          className="inline-block text-sm bg-green-600 text-white rounded-lg px-4 py-2.5 hover:bg-green-500 shrink-0"
         >
           Subscribe
         </Link>
       )}
+      </div>
     </div>
   );
 }

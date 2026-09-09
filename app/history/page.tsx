@@ -310,21 +310,27 @@ export default async function HistoryPage({
   return (
     <>
       <AppNav current="/history" />
-      <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mt-2 mb-6">Turnover history</h1>
+      <div className="max-w-5xl mx-auto p-6 sm:py-10">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-500 mb-2">
+        Performance
+      </p>
+      <h1 className="text-3xl font-semibold">Turnover history</h1>
+      <p className="text-sm text-muted mt-2 mb-7">
+        Review completed jobs, cleaner activity, checklist results, and proof photos.
+      </p>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="border rounded-lg p-3">
+      <div className="grid sm:grid-cols-3 gap-3 mb-7">
+        <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
           <p className="text-xs text-muted">Turnovers completed</p>
-          <p className="text-xl font-semibold mt-1">{totalCount}</p>
+          <p className="text-2xl font-semibold mt-1">{totalCount}</p>
         </div>
-        <div className="border rounded-lg p-3">
+        <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
           <p className="text-xs text-muted">Average checklist completion</p>
-          <p className="text-xl font-semibold mt-1">{avgScore !== null ? `${avgScore}%` : "—"}</p>
+          <p className="text-2xl font-semibold text-green-400 mt-1">{avgScore !== null ? `${avgScore}%` : "—"}</p>
         </div>
-        <div className="border rounded-lg p-3">
+        <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
           <p className="text-xs text-muted">Average duration</p>
-          <p className="text-xl font-semibold mt-1">
+          <p className="text-2xl font-semibold mt-1">
             {avgDuration !== null ? formatDuration(avgDuration) : "—"}
           </p>
         </div>
@@ -335,14 +341,20 @@ export default async function HistoryPage({
         </p>
       )}
 
-      <form method="get" className="border rounded-lg p-4 mb-6 grid gap-3 sm:grid-cols-4">
+      <div className="flex items-end justify-between gap-4 mb-3">
+        <div>
+          <h2 className="text-lg font-medium">Filter records</h2>
+          <p className="text-xs text-muted mt-1">Narrow the history by property, cleaner, or date.</p>
+        </div>
+      </div>
+      <form method="get" className="border border-gray-800 rounded-xl p-4 mb-8 grid gap-3 sm:grid-cols-4 bg-gray-950">
         <TzHiddenInput defaultValue={params.tz ?? ""} />
         <label className="block">
           <span className="text-xs text-muted">Property</span>
           <select
             name="property"
             defaultValue={params.property ?? ""}
-            className="w-full border rounded px-2 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           >
             <option value="">All properties</option>
             {properties?.map((p) => (
@@ -357,7 +369,7 @@ export default async function HistoryPage({
           <select
             name="cleaner"
             defaultValue={params.cleaner ?? ""}
-            className="w-full border rounded px-2 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           >
             <option value="">All cleaners</option>
             {cleaners?.map((c) => (
@@ -373,7 +385,7 @@ export default async function HistoryPage({
             type="date"
             name="from"
             defaultValue={params.from ?? ""}
-            className="w-full border rounded px-2 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           />
         </label>
         <label className="block">
@@ -382,15 +394,15 @@ export default async function HistoryPage({
             type="date"
             name="to"
             defaultValue={params.to ?? ""}
-            className="w-full border rounded px-2 py-2 text-sm mt-1 bg-white text-gray-900"
+            className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm mt-1 bg-gray-900 text-white"
           />
         </label>
         <div className="sm:col-span-4 flex gap-2">
-          <button type="submit" className="bg-black text-white text-sm rounded px-4 py-2">
+          <button type="submit" className="bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg px-4 py-2.5">
             Apply filters
           </button>
           {(params.property || params.cleaner || params.from || params.to) && (
-            <Link href="/history" className="text-sm text-muted underline self-center">
+            <Link href="/history" className="text-sm text-muted hover:text-white self-center px-2">
               Clear
             </Link>
           )}
@@ -404,8 +416,10 @@ export default async function HistoryPage({
       <div className="space-y-6">
         {groups.map((group) => (
           <div key={group.label}>
-            <h2 className="text-sm font-medium text-muted mb-2">{group.label}</h2>
-            <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted mb-3 flex items-center gap-3">
+              {group.label}<span className="h-px bg-gray-800 flex-1" />
+            </h2>
+            <div className="space-y-3">
               {group.rows.map((s) => {
                 const score = computeScore(s, totalItemsByProperty);
                 const durationMin = computeDurationMinutes(s);

@@ -59,16 +59,16 @@ export default function TurnoverRow({
   }
 
   return (
-    <div className="border rounded-lg text-sm">
+    <div className="border border-gray-800 rounded-xl text-sm bg-gray-950 overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="group w-full text-left px-4 py-3 hover:bg-gray-50 hover:text-gray-900"
+        className="group w-full text-left px-5 py-4 hover:bg-gray-900"
       >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-medium">{propertyName}</p>
-            <p className="text-muted group-hover:text-gray-500 text-xs mt-0.5">
+            <p className="font-medium flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500" />{propertyName}</p>
+            <p className="text-muted text-xs mt-1">
               <LocalTime
                 iso={startedAt}
                 options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }}
@@ -81,12 +81,12 @@ export default function TurnoverRow({
           <span
             className={`text-xs px-2 py-1 rounded-full shrink-0 ${
               score === null
-                ? "bg-gray-100 text-gray-500"
+                ? "bg-gray-800 text-gray-300"
                 : score >= 90
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-green-950 text-green-300"
                   : score >= 60
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-red-100 text-red-800"
+                    ? "bg-amber-950 text-amber-300"
+                    : "bg-red-950 text-red-300"
             }`}
           >
             {score !== null ? `${score}% checklist completion` : "Complete"}
@@ -95,7 +95,7 @@ export default function TurnoverRow({
       </button>
 
       {open && (
-        <div className="border-t px-4 py-3 space-y-3">
+        <div className="border-t border-gray-800 px-5 py-4 space-y-4 bg-gray-950">
           {zones.map((zone) => {
             const scan = scanByZone.get(zone.slug);
             return (
@@ -104,7 +104,7 @@ export default function TurnoverRow({
                   <p className="font-medium text-xs">{zone.name}</p>
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${
-                      scan ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
+                      scan ? "bg-green-950 text-green-300" : "bg-gray-800 text-gray-400"
                     }`}
                   >
                     {scan ? (
@@ -142,7 +142,7 @@ export default function TurnoverRow({
                         <img
                           src={p.photo_url}
                           alt={`${zone.name} photo ${i + 1}`}
-                          className="w-14 h-14 rounded object-cover border"
+                          className="w-16 h-16 rounded-lg object-cover border border-gray-700"
                         />
                         {p.is_duplicate && (
                           <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
@@ -157,7 +157,7 @@ export default function TurnoverRow({
             );
           })}
           <div className="flex items-center justify-between gap-3 pt-1">
-            <Link href={`/properties/${propertyId}`} className="text-sm text-muted underline">
+            <Link href={`/properties/${propertyId}`} className="text-sm text-green-400 hover:text-green-300">
               Open property page
             </Link>
             <button
@@ -165,7 +165,7 @@ export default function TurnoverRow({
               onClick={handleDelete}
               disabled={deleting}
               aria-label={`Delete turnover for ${propertyName}`}
-              className="text-sm font-medium text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-50 disabled:opacity-50"
+              className="text-sm font-medium text-red-400 border border-red-900 rounded-lg px-3 py-1.5 hover:bg-red-950 disabled:opacity-50"
             >
               {deleting ? "Deleting..." : "Delete"}
             </button>
