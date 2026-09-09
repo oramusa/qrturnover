@@ -32,7 +32,7 @@ export default function EmailQrForm({ propertyId }: { propertyId: string }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 print:hidden"
+        className="text-sm border border-gray-700 rounded-lg px-3 py-2 hover:bg-gray-900 print:hidden"
       >
         Email QR links
       </button>
@@ -42,7 +42,7 @@ export default function EmailQrForm({ propertyId }: { propertyId: string }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="border rounded-lg p-3 flex items-center gap-2 print:hidden bg-white text-gray-900"
+      className="border border-gray-800 bg-gray-950 rounded-lg p-3 flex items-center gap-2 print:hidden"
     >
       <input
         type="email"
@@ -50,26 +50,26 @@ export default function EmailQrForm({ propertyId }: { propertyId: string }) {
         placeholder="cleaner@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border rounded px-3 py-2 text-sm bg-white text-gray-900"
+        className="border border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
       />
       <button
         type="submit"
         disabled={status === "sending"}
-        className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
+        className="bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg px-4 py-2 disabled:opacity-50 transition-colors"
       >
         {status === "sending" ? "Sending..." : "Send"}
       </button>
       <button
         type="button"
         onClick={() => setOpen(false)}
-        className="text-sm text-gray-500"
+        className="text-sm text-muted hover:text-white"
       >
         Cancel
       </button>
       {status === "sent" && (
-        <span className="text-sm text-green-700">Sent!</span>
+        <span className="text-sm text-green-400">Sent!</span>
       )}
-      {error && <span className="text-sm text-red-600">{error}</span>}
+      {error && <span className="text-sm text-red-400">{error}</span>}
     </form>
   );
 }

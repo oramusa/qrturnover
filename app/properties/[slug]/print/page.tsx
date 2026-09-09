@@ -59,18 +59,18 @@ export default async function PrintSheetPage({
       <div className="print:hidden">
         <AppNav />
       </div>
-      <div className="max-w-3xl mx-auto p-6 print:p-0">
+      <div className="max-w-5xl mx-auto p-6 sm:py-10 print:p-0 print:max-w-none">
       <Link
         href={`/properties/${slug}`}
-        className="text-sm text-muted underline print:hidden"
+        className="text-sm text-green-400 hover:text-green-300 print:hidden"
       >
         &larr; Back to property
       </Link>
 
-      <div className="flex items-center gap-3 mt-4 mb-2">
+      <div className="flex items-center gap-3 mt-4 mb-2 flex-wrap print:mt-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="QRTurnover" className="w-10 h-10 object-contain" />
-        <h1 className="text-xl font-semibold">
+        <img src="/logo.png" alt="QRTurnover" className="w-10 h-10 object-contain print:hidden" />
+        <h1 className="text-2xl font-semibold break-words">
           Print QR codes — {property?.name}
         </h1>
         <div className="flex items-center gap-2 ml-auto print:hidden">
@@ -89,24 +89,26 @@ export default async function PrintSheetPage({
         {zonesWithQr.map((zone) => (
           <div
             key={zone.slug}
-            className="border rounded-lg p-3 flex flex-col items-center text-center break-inside-avoid"
+            className="border border-gray-800 bg-gray-950 rounded-xl p-3 flex flex-col items-center text-center break-inside-avoid print:border-gray-300 print:bg-white"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={zone.qr} alt={`QR code for ${zone.name}`} className="w-32 h-32" />
-            <p className="text-sm font-medium mt-2">
+            <div className="bg-white rounded-lg p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={zone.qr} alt={`QR code for ${zone.name}`} className="w-32 h-32" />
+            </div>
+            <p className="text-sm font-medium mt-2 print:text-gray-900">
               {zone.name}
-              {claim && <span className="font-normal text-muted"> / {setLabel}</span>}
+              {claim && <span className="font-normal text-muted print:text-gray-500"> / {setLabel}</span>}
             </p>
             <div className="flex items-center gap-2 mt-1 print:hidden">
               <a
                 href={`/api/qr/${claim!.set_id}/${zone.slug}?format=png`}
-                className="text-xs text-muted underline"
+                className="text-xs text-green-400 hover:text-green-300"
               >
                 PNG
               </a>
               <a
                 href={`/api/qr/${claim!.set_id}/${zone.slug}?format=svg`}
-                className="text-xs text-muted underline"
+                className="text-xs text-green-400 hover:text-green-300"
               >
                 SVG
               </a>
