@@ -15,20 +15,20 @@ export default function AppNav({
 }) {
   return (
     <header className="border-b border-gray-800">
-      <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
+      <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight shrink-0">
           <span className="bg-white rounded-md p-1 flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-icon.png" alt="" className="w-6 h-6 object-contain" />
           </span>
-          QRTurnover
+          <span className="whitespace-nowrap">QRTurnover</span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm">
+        <nav className="flex items-center gap-1 text-sm overflow-x-auto flex-nowrap min-w-0 ml-auto">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-colors shrink-0 whitespace-nowrap ${
                 current === item.href
                   ? "bg-white text-gray-900"
                   : "text-muted hover:text-white"
@@ -37,8 +37,8 @@ export default function AppNav({
               {item.label}
             </Link>
           ))}
-          <form action="/api/auth/signout" method="post" className="ml-2">
-            <button className="text-sm text-muted hover:text-white px-3 py-1.5">
+          <form action="/api/auth/signout" method="post" className="ml-2 shrink-0">
+            <button className="text-sm text-muted hover:text-white px-3 py-1.5 whitespace-nowrap">
               Log out
             </button>
           </form>
