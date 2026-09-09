@@ -91,28 +91,6 @@ export async function GET(req: NextRequest) {
     lastTurnoverJustFinished = lastSession?.status === "complete";
   }
 
-  const { data: checklistItems } = await supabase
-    .from("zone_checklist_items")
-    .select("id, label, sort_order")
-    .eq("property_id", propertyId)
-    .eq("zone_slug", zoneSlug)
-    .order("sort_order", { ascending: true });
-
-  let completedIds = new Set<string>();
-  if (activeSession) {
-    const { data: completions } = await supabase
-      .from("scan_item_completions")
-      .select("item_id")
-      .eq("session_id", activeSession.id);
-    completedIds = new Set((completions ?? []).map((c) => c.item_id));
-  }
-
-  const checklist = (checklistItems ?? []).map((item) => ({
-    id: item.id,
-    label: item.label,
-    completed: completedIds.has(item.id),
-  }));
-
   const { data: setZones } = await supabase
     .from("qr_set_zones")
     .select("zone_slug, zone_label, sort_order")
@@ -141,7 +119,6 @@ export async function GET(req: NextRequest) {
       slug: zoneSlug,
       name: zoneDef.zone_label,
       task_description: zoneSettings?.task_description ?? null,
-      checklist,
       require_photo: zoneSettings?.require_photo ?? false,
       property_name: propertyName,
     },

@@ -64,24 +64,11 @@ export default async function PropertyPage({
     .eq("property_id", id);
   const settingsBySlug = new Map((zoneSettingsRows ?? []).map((s) => [s.zone_slug, s]));
 
-  const { data: checklistItemRows } = await supabase
-    .from("zone_checklist_items")
-    .select("id, zone_slug, label, sort_order")
-    .eq("property_id", id)
-    .order("sort_order", { ascending: true });
-  const checklistBySlug = new Map<string, { id: string; label: string; sort_order: number }[]>();
-  for (const item of checklistItemRows ?? []) {
-    const arr = checklistBySlug.get(item.zone_slug) ?? [];
-    arr.push({ id: item.id, label: item.label, sort_order: item.sort_order });
-    checklistBySlug.set(item.zone_slug, arr);
-  }
-
   const zones = (setZones ?? []).map((z) => ({
     slug: z.zone_slug,
     name: z.zone_label,
     task_description: settingsBySlug.get(z.zone_slug)?.task_description ?? null,
     require_photo: settingsBySlug.get(z.zone_slug)?.require_photo ?? false,
-    zone_checklist_items: checklistBySlug.get(z.zone_slug) ?? [],
   }));
   const zoneLabelBySlug = new Map(zones.map((z) => [z.slug, z.name]));
 
@@ -132,14 +119,6 @@ export default async function PropertyPage({
   const activeCleanerName = activeSession?.cleaners
     ? (activeSession.cleaners as unknown as { name: string }).name
     : null;
-
-  const { data: itemCompletions } = activeSession
-    ? await supabase
-        .from("scan_item_completions")
-        .select("item_id")
-        .eq("session_id", activeSession.id)
-    : { data: [] as { item_id: string }[] };
-  const completedItemIds = new Set((itemCompletions ?? []).map((c) => c.item_id));
 
   return (
     <div>
@@ -204,7 +183,7 @@ export default async function PropertyPage({
         <div className="flex items-center justify-between gap-4 mt-9 flex-wrap">
           <div>
             <h2 className="text-lg font-medium">Property zones</h2>
-            <p className="text-xs text-muted mt-1">Live QR scan and checklist status for each room.</p>
+            <p className="text-xs text-muted mt-1">Live QR verification and photo proof for each room.</p>
           </div>
           {setId && (
             <div className="flex items-center gap-3">
@@ -231,7 +210,6 @@ export default async function PropertyPage({
               done={!!activeSession && scannedZoneSlugs.has(zone.slug)}
               scannedAt={activeScannedAtByZone.get(zone.slug)}
               scannedBy={activeCleanerByZone.get(zone.slug)}
-              completedItemIds={completedItemIds}
               photos={activePhotosByZone.get(zone.slug) ?? []}
             />
           ))}

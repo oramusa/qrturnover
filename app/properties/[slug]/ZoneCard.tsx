@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import LocalTime from "./LocalTime";
-import ZoneChecklist from "./ZoneChecklist";
 import ZoneSettings from "./ZoneSettings";
 
-type ChecklistItem = { id: string; label: string; sort_order: number };
 type Photo = { url: string; isDuplicate: boolean };
 
 export default function ZoneCard({
@@ -15,7 +13,6 @@ export default function ZoneCard({
   done,
   scannedAt,
   scannedBy,
-  completedItemIds,
   photos,
 }: {
   propertyId: string;
@@ -24,18 +21,14 @@ export default function ZoneCard({
     name: string;
     task_description: string | null;
     require_photo: boolean;
-    zone_checklist_items: ChecklistItem[];
   };
   showStatus: boolean;
   done: boolean;
   scannedAt?: string;
   scannedBy?: string;
-  completedItemIds: Set<string>;
   photos: Photo[];
 }) {
   const [open, setOpen] = useState(false);
-  const total = zone.zone_checklist_items.length;
-  const completedCount = zone.zone_checklist_items.filter((i) => completedItemIds.has(i.id)).length;
 
   return (
     <div className="border border-gray-800 rounded-xl p-5 bg-gray-950">
@@ -104,9 +97,7 @@ export default function ZoneCard({
       )}
 
       <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-800">
-        <span className="text-xs text-muted">
-          {total > 0 ? `${completedCount} / ${total} checklist items` : "No checklist items"}
-        </span>
+        <span className="text-xs text-muted">Room instructions and photo settings</span>
         <button
           type="button"
           onClick={() => setOpen(!open)}
@@ -118,13 +109,6 @@ export default function ZoneCard({
 
       {open && (
         <div className="mt-4 pt-4 border-t border-gray-800 space-y-4">
-          <ZoneChecklist
-            propertyId={propertyId}
-            zoneSlug={zone.slug}
-            zoneName={zone.name}
-            items={zone.zone_checklist_items}
-            forceOpen
-          />
           <ZoneSettings
             propertyId={propertyId}
             zoneSlug={zone.slug}

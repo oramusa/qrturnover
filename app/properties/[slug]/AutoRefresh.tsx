@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 // Refreshes the host's view while a turnover is active. Realtime pushes updates
-// the instant a cleaner scans a zone or checks off an item; the interval below
+// the instant a cleaner scans a zone; the interval below
 // is just a fallback in case the websocket connection drops.
 const FALLBACK_POLL_MS = 20000;
 
@@ -33,11 +33,6 @@ export default function AutoRefresh({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "scan_events", filter: `session_id=eq.${sessionId}` },
-        () => router.refresh()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "scan_item_completions", filter: `session_id=eq.${sessionId}` },
         () => router.refresh()
       )
       .on(

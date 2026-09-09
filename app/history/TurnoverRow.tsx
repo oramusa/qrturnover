@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import LocalTime from "@/app/properties/[slug]/LocalTime";
 
-type ChecklistItem = { id: string; label: string };
-type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] };
+type Zone = { slug: string; name: string };
 type ScanRecord = {
   zone_slug: string;
   scanned_at: string;
@@ -22,10 +21,8 @@ export default function TurnoverRow({
   cleanerName,
   startedAt,
   durationLabel,
-  score,
   zones,
   scanRecords,
-  completedItemIds,
 }: {
   sessionId: string;
   propertySlug: string;
@@ -33,10 +30,8 @@ export default function TurnoverRow({
   cleanerName: string | null;
   startedAt: string;
   durationLabel: string | null;
-  score: number | null;
   zones: Zone[];
   scanRecords: ScanRecord[];
-  completedItemIds: Set<string>;
 }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -78,18 +73,8 @@ export default function TurnoverRow({
               {durationLabel ? ` · ${durationLabel}` : ""}
             </p>
           </div>
-          <span
-            className={`text-xs px-2 py-1 rounded-full shrink-0 ${
-              score === null
-                ? "bg-gray-800 text-gray-300"
-                : score >= 90
-                  ? "bg-green-950 text-green-300"
-                  : score >= 60
-                    ? "bg-amber-950 text-amber-300"
-                    : "bg-red-950 text-red-300"
-            }`}
-          >
-            {score !== null ? `${score}% checklist completion` : "Complete"}
+          <span className="text-xs px-2 py-1 rounded-full shrink-0 bg-green-950 text-green-300">
+            Complete
           </span>
         </div>
       </button>
@@ -117,16 +102,6 @@ export default function TurnoverRow({
                     )}
                   </span>
                 </div>
-                {zone.zone_checklist_items.length > 0 && (
-                  <ul className="mt-1 space-y-0.5">
-                    {zone.zone_checklist_items.map((item) => (
-                      <li key={item.id} className="text-xs text-muted flex items-center gap-1.5">
-                        <span>{completedItemIds.has(item.id) ? "✓" : "○"}</span>
-                        {item.label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
                 {scan && scan.scan_event_photos.length > 0 && (
                   <div className="flex gap-1.5 mt-1.5 flex-nowrap overflow-x-auto">
                     {scan.scan_event_photos.map((p, i) => (

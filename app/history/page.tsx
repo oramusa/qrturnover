@@ -8,8 +8,7 @@ const PAGE_SIZE = 20;
 const SUMMARY_CAP = 500;
 const MAX_REASONABLE_DURATION_MINUTES = 24 * 60;
 
-type ChecklistItem = { id: string; label: string };
-type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] };
+type Zone = { slug: string; name: string };
 type ScanEvent = {
   zone_slug: string;
   scanned_at: string;
@@ -29,23 +28,8 @@ type SessionRow = {
     slug: string | null;
   } | null;
   cleaners: { name: string } | null;
-  scan_item_completions: { item_id: string }[] | null;
   scan_events: ScanEvent[] | null;
 };
-
-function computeScore(
-  s: Pick<SessionRow, "property_id" | "scan_item_completions">,
-  totalItemsByProperty: Map<string, number>
-) {
-  const totalItems = totalItemsByProperty.get(s.property_id) ?? 0;
-  if (totalItems === 0) return null;
-  const completed = s.scan_item_completions?.length ?? 0;
-  // Sessions created before structured checklists were introduced have no
-  // item-completion rows. Showing those legacy sessions as 0% is misleading:
-  // there was no checklist score available at the time.
-  if (completed === 0) return null;
-  return Math.round((Math.min(completed, totalItems) / totalItems) * 100);
-}
 
 function computeDurationMinutes(s: Pick<SessionRow, "job_started_at" | "job_finished_at">) {
   if (!s.job_started_at || !s.job_finished_at) return null;
@@ -182,27 +166,6 @@ export default async function HistoryPage({
     return q;
   }
 
-  // Checklist item totals per property, and per-(property, zone) item lists —
-  // fetched once up front for every property this host owns, reused for both
-  // the score computation and each row's expanded per-zone breakdown.
-  const { data: allChecklistItems } =
-    ownPropertyIds.length > 0
-      ? await supabase
-          .from("zone_checklist_items")
-          .select("id, property_id, zone_slug, label")
-          .in("property_id", ownPropertyIds)
-      : { data: [] as { id: string; property_id: string; zone_slug: string; label: string }[] };
-
-  const totalItemsByProperty = new Map<string, number>();
-  const checklistItemsByPropertyZone = new Map<string, ChecklistItem[]>();
-  for (const item of allChecklistItems ?? []) {
-    totalItemsByProperty.set(item.property_id, (totalItemsByProperty.get(item.property_id) ?? 0) + 1);
-    const key = `${item.property_id}:${item.zone_slug}`;
-    const arr = checklistItemsByPropertyZone.get(key) ?? [];
-    arr.push({ id: item.id, label: item.label });
-    checklistItemsByPropertyZone.set(key, arr);
-  }
-
   const { data: allClaims } =
     ownPropertyIds.length > 0
       ? await supabase
@@ -235,7 +198,6 @@ export default async function HistoryPage({
     return (setZonesBySet.get(setId) ?? []).map((z) => ({
       slug: z.zone_slug,
       name: z.zone_label,
-      zone_checklist_items: checklistItemsByPropertyZone.get(`${propertyId}:${z.zone_slug}`) ?? [],
     }));
   }
 
@@ -246,7 +208,6 @@ export default async function HistoryPage({
         `id, property_id, started_at, job_started_at, job_finished_at,
          properties ( id, name, slug ),
          cleaners ( name ),
-         scan_item_completions ( item_id ),
          scan_events ( zone_slug, scanned_at, cleaners ( name ), scan_event_photos ( photo_url, is_duplicate ) )`,
         { count: "exact" }
       )
@@ -262,21 +223,16 @@ export default async function HistoryPage({
   const summaryQuery = applyFilters(
     supabase
       .from("turnover_sessions")
-      .select(`property_id, job_started_at, job_finished_at, scan_item_completions ( item_id )`)
+      .select(`property_id, job_started_at, job_finished_at`)
       .eq("status", "complete")
       .order("started_at", { ascending: false })
       .limit(SUMMARY_CAP)
   );
   const { data: summarySessions } = await summaryQuery;
 
-  const scores = (summarySessions ?? [])
-    .map((s) => computeScore(s as unknown as SessionRow, totalItemsByProperty))
-    .filter((n): n is number => n !== null);
   const durations = (summarySessions ?? [])
     .map((s) => computeDurationMinutes(s as unknown as SessionRow))
     .filter((n): n is number => n !== null);
-  const avgScore =
-    scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
   const avgDuration =
     durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : null;
 
@@ -317,7 +273,7 @@ export default async function HistoryPage({
       </p>
       <h1 className="text-3xl font-semibold">Turnover history</h1>
       <p className="text-sm text-muted mt-2 mb-7">
-        Review completed jobs, cleaner activity, checklist results, and proof photos.
+        Review completed jobs, cleaner activity, zone scans, and proof photos.
       </p>
 
       <div className="grid sm:grid-cols-3 gap-3 mb-7">
@@ -326,8 +282,8 @@ export default async function HistoryPage({
           <p className="text-2xl font-semibold mt-1">{totalCount}</p>
         </div>
         <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
-          <p className="text-xs text-muted">Average checklist completion</p>
-          <p className="text-2xl font-semibold text-green-400 mt-1">{avgScore !== null ? `${avgScore}%` : "—"}</p>
+          <p className="text-xs text-muted">Properties tracked</p>
+          <p className="text-2xl font-semibold text-green-400 mt-1">{properties?.length ?? 0}</p>
         </div>
         <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
           <p className="text-xs text-muted">Average duration</p>
@@ -422,7 +378,6 @@ export default async function HistoryPage({
             </h2>
             <div className="space-y-3">
               {group.rows.map((s) => {
-                const score = computeScore(s, totalItemsByProperty);
                 const durationMin = computeDurationMinutes(s);
                 return (
                   <TurnoverRow
@@ -433,10 +388,8 @@ export default async function HistoryPage({
                     cleanerName={s.cleaners?.name ?? null}
                     startedAt={s.started_at}
                     durationLabel={durationMin !== null ? formatDuration(durationMin) : null}
-                    score={score}
                     zones={zonesForProperty(s.property_id)}
                     scanRecords={s.scan_events ?? []}
-                    completedItemIds={new Set((s.scan_item_completions ?? []).map((c) => c.item_id))}
                   />
                 );
               })}

@@ -25,8 +25,8 @@ export default function Home() {
             Know your rental is ready before the next guest arrives.
           </h1>
           <p className="text-muted mt-6 text-lg max-w-xl">
-            Place a QR code in every room. Your cleaner scans, completes the checklist,
-            and uploads photos. You follow the turnover live—without repeated calls or texts.
+            Place a QR code in every room. Your cleaner scans and uploads proof photos.
+            You follow the turnover live—without repeated calls or texts.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <AuthTriggerButton mode="signup" className="bg-black text-white rounded-lg px-6 py-3 font-medium">
@@ -43,7 +43,7 @@ export default function Home() {
             <span className="text-xs bg-amber-100 text-amber-800 rounded-full px-3 py-1">Live</span>
           </div>
           <div className="mt-4 space-y-3">
-            {[['Bathroom', '8/8 items', true], ['Kitchen', '7/7 items', true], ['Bedroom', '3/5 items', false], ['Living room', 'Pending', false]].map(([name, status, done]) => (
+            {[['Bathroom', 'Photo received', true], ['Kitchen', 'Photo received', true], ['Bedroom', 'Waiting for scan', false], ['Living room', 'Pending', false]].map(([name, status, done]) => (
               <div key={String(name)} className="bg-white border rounded-xl p-4 flex items-center justify-between">
                 <div><p className="font-medium">{name}</p><p className="text-xs text-gray-500">{status}</p></div>
                 <span className={`text-xs rounded-full px-3 py-1 ${done ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}>
@@ -61,8 +61,8 @@ export default function Home() {
           <h2 className="text-3xl font-bold mt-2">Simple for hosts. Even simpler for cleaners.</h2>
           <div className="grid md:grid-cols-3 gap-6 mt-10">
             {[
-              ['1', 'Set up each zone', 'Create room checklists and print the unique QR codes for your property.'],
-              ['2', 'Cleaner scans and completes', 'No app download or cleaner password—just scan, check tasks, and add proof photos.'],
+              ['1', 'Set up each zone', 'Add room instructions and print the unique QR codes for your property.'],
+              ['2', 'Cleaner scans and completes', 'No app download or cleaner password—just scan and add proof photos.'],
               ['3', 'Watch progress live', 'See completed zones, timestamps, cleaner activity, and photos from anywhere.'],
             ].map(([number, title, body]) => (
               <div key={number} className="bg-white border rounded-xl p-6">
@@ -79,10 +79,10 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-center">Everything you need for a reliable turnover</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
           {[
-            ['Room-by-room checklists', 'Create detailed tasks for kitchens, bathrooms, bedrooms, and more.'],
+            ['Room instructions', 'Add clear guidance for kitchens, bathrooms, bedrooms, and more.'],
             ['Photo proof', 'Require photos in important zones before they can be marked complete.'],
             ['Live status', 'Know what is finished, what is pending, and who completed each zone.'],
-            ['Turnover history', 'Review past cleanings, checklist completion, timing, and submitted photos.'],
+            ['Turnover history', 'Review past cleanings, room scans, timing, and submitted photos.'],
           ].map(([title, body]) => (
             <div key={title} className="border rounded-xl p-5">
               <h3 className="font-semibold">{title}</h3>

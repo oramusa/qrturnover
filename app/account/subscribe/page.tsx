@@ -4,7 +4,7 @@ import EmbeddedCheckoutForm from "./EmbeddedCheckoutForm";
 const INCLUDED = [
   "Unlimited properties and zones",
   "QR-code cleaning verification for every turnover",
-  "Cleaner checklists and photo proof",
+  "Cleaner verification and photo proof",
   "Full turnover history and reporting",
 ];
 
