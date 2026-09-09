@@ -73,7 +73,7 @@ export default function AddZoneForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs text-muted underline"
+        className="text-xs font-medium text-green-400 hover:text-green-300"
       >
         + Add zone
       </button>

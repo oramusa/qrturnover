@@ -60,8 +60,8 @@ export default function CleanerAssignment({
             disabled={pending === cleaner.id}
             className={`text-sm rounded-full px-3 py-1.5 border disabled:opacity-50 ${
               isAssigned
-                ? "bg-black text-white border-black"
-                : "bg-white text-gray-700 hover:bg-gray-50"
+                ? "bg-green-950 text-green-300 border-green-900"
+                : "bg-gray-950 text-gray-300 border-gray-800 hover:bg-gray-900"
             }`}
           >
             {isAssigned ? "✓ " : "+ "}

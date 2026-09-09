@@ -10,13 +10,16 @@ export default function ZoneChecklist({
   zoneSlug,
   zoneName,
   items,
+  forceOpen,
 }: {
   propertyId: string;
   zoneSlug: string;
   zoneName: string;
   items: { id: string; label: string; sort_order: number }[];
+  forceOpen?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const isOpen = forceOpen || open;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -132,16 +135,23 @@ export default function ZoneChecklist({
   }
 
   return (
-    <div className="mt-2">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="text-xs text-muted underline"
-      >
-        Checklist ({items.length})
-      </button>
-      {open && (
+    <div className={forceOpen ? "" : "mt-2"}>
+      {!forceOpen && (
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="text-xs text-muted underline"
+        >
+          Checklist ({items.length})
+        </button>
+      )}
+      {isOpen && (
         <div className="mt-2 border rounded-lg p-3 bg-gray-50 text-gray-900">
+          {forceOpen && (
+            <p className="text-xs font-medium text-gray-500 mb-2">
+              Checklist ({items.length})
+            </p>
+          )}
           <ChecklistItemsEditor
             items={items}
             onAdd={handleAdd}

@@ -8,10 +8,16 @@ export default function StartTurnoverButton({
   propertyId,
   hasActiveSession,
   activeSessionId,
+  cleanerName,
+  zoneCount,
+  scannedCount,
 }: {
   propertyId: string;
   hasActiveSession: boolean;
   activeSessionId?: string;
+  cleanerName?: string | null;
+  zoneCount: number;
+  scannedCount: number;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,32 +93,52 @@ export default function StartTurnoverButton({
   }
 
   if (hasActiveSession) {
+    const progress = zoneCount > 0 ? Math.min(100, Math.round((scannedCount / zoneCount) * 100)) : 0;
     return (
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded">
-          Turnover in progress — share the property&apos;s scan links or printed QR codes with your cleaner.
-        </span>
-        <button
-          onClick={completeTurnover}
-          disabled={loading}
-          className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50"
-        >
-          Mark complete
-        </button>
+      <div className="border border-gray-800 rounded-xl p-5 bg-gray-950 mt-6">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h2 className="font-medium">Live turnover</h2>
+            <p className="text-xs text-muted mt-0.5">
+              {cleanerName ? `${cleanerName} is working` : "Waiting for a cleaner to start"} · status
+              updates automatically
+            </p>
+          </div>
+          <button
+            onClick={completeTurnover}
+            disabled={loading}
+            className="text-sm border border-gray-700 rounded-lg px-3 py-2 hover:bg-gray-900 disabled:opacity-50 shrink-0"
+          >
+            {loading ? "Saving..." : "Mark complete"}
+          </button>
+        </div>
+        <div className="h-2 bg-gray-800 rounded-full overflow-hidden mt-4">
+          <div
+            className="h-full bg-green-600 rounded-full transition-all"
+            style={{ width: `${progress}%` }}
+            aria-hidden="true"
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="border border-gray-800 rounded-xl p-5 bg-gray-950 mt-6 flex items-center justify-between gap-3 flex-wrap">
+      <div>
+        <h2 className="font-medium">Ready for the next turnover</h2>
+        <p className="text-xs text-muted mt-0.5">
+          Start a turnover to activate this property&apos;s scan links for your cleaner.
+        </p>
+      </div>
       <button
         onClick={startTurnover}
         disabled={loading}
-        className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
+        className="bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg px-4 py-2.5 disabled:opacity-50 shrink-0"
       >
         {loading ? "Starting..." : "Start turnover"}
       </button>
-      {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+      {error && <p className="text-red-600 text-sm w-full">{error}</p>}
     </div>
   );
 }

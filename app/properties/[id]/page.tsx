@@ -4,10 +4,8 @@ import StartTurnoverButton from "./StartTurnoverButton";
 import CleanerAssignment from "./CleanerAssignment";
 import AutoRefresh from "./AutoRefresh";
 import DeletePropertyButton from "./DeletePropertyButton";
-import ZoneChecklist from "./ZoneChecklist";
-import ZoneSettings from "./ZoneSettings";
+import ZoneCard from "./ZoneCard";
 import AddZoneForm from "./AddZoneForm";
-import LocalTime from "./LocalTime";
 import AppNav from "@/app/components/AppNav";
 import { getHostSetNumber } from "@/lib/setLabel";
 
@@ -126,6 +124,9 @@ export default async function PropertyPage({
       .filter((r) => r.cleaners)
       .map((r) => [r.zone_slug, (r.cleaners as unknown as { name: string }).name])
   );
+  const activeCleanerName = activeSession?.cleaners
+    ? (activeSession.cleaners as unknown as { name: string }).name
+    : null;
 
   const { data: itemCompletions } = activeSession
     ? await supabase
@@ -140,259 +141,192 @@ export default async function PropertyPage({
   }
 
   return (
-    <>
-      <AppNav />
-      <div className="max-w-3xl mx-auto p-6">
-      <div className="flex items-start justify-between flex-wrap gap-3 mt-2 mb-6">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold break-words">{property.name}</h1>
-          {property.address && (
-            <p className="text-sm text-muted">{property.address}</p>
+    <div>
+      <AppNav current="/dashboard" />
+      <div className="max-w-5xl mx-auto p-6 sm:py-10">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-500 mb-2">
+              {zones.length}-zone rental property
+            </p>
+            <h1 className="text-3xl font-semibold break-words">{property.name}</h1>
+            {property.address && (
+              <p className="text-sm text-muted mt-2">{property.address}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-4 shrink-0">
+            <Link
+              href={`/properties/${id}/print`}
+              className="text-sm border border-gray-700 rounded-lg px-3 py-2 hover:bg-gray-900"
+            >
+              Print QR sheet
+            </Link>
+            <DeletePropertyButton propertyId={id} propertyName={property.name} />
+          </div>
+        </div>
+
+        <AutoRefresh enabled={!!activeSession} sessionId={activeSession?.id} />
+
+        <div className="grid sm:grid-cols-3 gap-3 mt-7">
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
+            <p className="text-xs text-muted">Current status</p>
+            <p
+              className={`text-lg font-semibold mt-1 ${
+                activeSession ? "text-amber-400" : "text-green-400"
+              }`}
+            >
+              {activeSession ? "Turnover in progress" : "Ready"}
+            </p>
+          </div>
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
+            <p className="text-xs text-muted">Zones verified</p>
+            <p className="text-2xl font-semibold mt-1">
+              {scannedZoneSlugs.size}
+              <span className="text-muted text-base font-normal"> / {zones.length}</span>
+            </p>
+          </div>
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
+            <p className="text-xs text-muted">Assigned cleaners</p>
+            <p className="text-2xl font-semibold mt-1">{assignedIds.size}</p>
+          </div>
+        </div>
+
+        <StartTurnoverButton
+          propertyId={id}
+          hasActiveSession={!!activeSession}
+          activeSessionId={activeSession?.id}
+          cleanerName={activeCleanerName}
+          zoneCount={zones.length}
+          scannedCount={scannedZoneSlugs.size}
+        />
+
+        <div className="flex items-center justify-between gap-4 mt-9 flex-wrap">
+          <div>
+            <h2 className="text-lg font-medium">Property zones</h2>
+            <p className="text-xs text-muted mt-1">Live QR scan and checklist status for each room.</p>
+          </div>
+          {setId && (
+            <div className="flex items-center gap-3">
+              <AddZoneForm
+                propertyId={id}
+                setId={setId}
+                existingSlugs={zones.map((z) => z.slug)}
+                nextSortOrder={zones.length}
+              />
+              <span className="text-xs px-2.5 py-1 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap">
+                QR Set {hostSetNumber ? `#${hostSetNumber}` : setId}
+              </span>
+            </div>
           )}
         </div>
-        <div className="flex items-center gap-4">
-          <Link
-            href={`/properties/${id}/print`}
-            className="text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Print QR sheet
-          </Link>
-          <DeletePropertyButton propertyId={id} propertyName={property.name} />
-        </div>
-      </div>
 
-      <AutoRefresh enabled={!!activeSession} sessionId={activeSession?.id} />
-
-      <StartTurnoverButton
-        propertyId={id}
-        hasActiveSession={!!activeSession}
-        activeSessionId={activeSession?.id}
-      />
-
-      {activeSession && (
-        <p className="text-sm text-muted mt-2">
-          {activeSession.cleaners
-            ? `Assigned cleaner: ${(activeSession.cleaners as unknown as { name: string }).name}`
-            : "Waiting for a cleaner to start the job"}
-          {activeSession.job_started_at && !activeSession.job_finished_at && " — job in progress"}
-        </p>
-      )}
-
-      <div className="flex items-center justify-between mt-8 mb-3 flex-wrap gap-2">
-        <h2 className="text-lg font-medium">Zones</h2>
-        {setId && (
-          <div className="flex items-center gap-3">
-            <AddZoneForm
+        <div className="grid md:grid-cols-2 gap-4 mt-4">
+          {zones.map((zone) => (
+            <ZoneCard
+              key={zone.slug}
               propertyId={id}
-              setId={setId}
-              existingSlugs={zones.map((z) => z.slug)}
-              nextSortOrder={zones.length}
+              zone={zone}
+              showStatus={!!activeSession}
+              done={!!activeSession && scannedZoneSlugs.has(zone.slug)}
+              scannedAt={activeScannedAtByZone.get(zone.slug)}
+              scannedBy={activeCleanerByZone.get(zone.slug)}
+              completedItemIds={completedItemIds}
+              photos={activePhotosByZone.get(zone.slug) ?? []}
             />
-            <span className="flex items-center gap-1.5 text-xs text-muted">
-              QR set
-              <span className="font-mono bg-gray-100 text-gray-900 px-2 py-0.5 rounded-full">
-                {hostSetNumber ? `Set #${hostSetNumber}` : setId}
-              </span>
-            </span>
-          </div>
-        )}
-      </div>
-
-      {activeSession && (
-        <p className="text-sm text-muted mb-3">
-          Live status for the current turnover — updates as the cleaner scans each zone.
-        </p>
-      )}
-
-      <div className="space-y-2 mb-6">
-        {zones.map((zone) => {
-          const done = !!activeSession && scannedZoneSlugs.has(zone.slug);
-          const zonePhotos = activePhotosByZone.get(zone.slug) ?? [];
-          const scannedAt = activeScannedAtByZone.get(zone.slug);
-          const scannedBy = activeCleanerByZone.get(zone.slug);
-          return (
-            <div key={zone.slug} className="border rounded-lg px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="min-w-0">
-                    <p className="font-medium flex items-center gap-2">
-                      {zone.name}
-                      {zone.require_photo && (
-                        <span className="text-[10px] text-muted border rounded-full px-1.5 py-0.5">
-                          photo required
-                        </span>
-                      )}
-                    </p>
-                    {zone.task_description && (
-                      <p className="text-xs text-muted">{zone.task_description}</p>
-                    )}
-                    {done && scannedBy && (
-                      <p className="text-xs text-muted">Scanned by {scannedBy}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  {activeSession && (
-                    <>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        {done && scannedAt ? (
-                          <>
-                            Done at <LocalTime iso={scannedAt} />
-                          </>
-                        ) : done ? (
-                          "Done"
-                        ) : (
-                          "Pending"
-                        )}
-                      </span>
-                      {zone.zone_checklist_items.length > 0 && (
-                        <span className="text-xs text-muted">
-                          {zone.zone_checklist_items.filter((i) => completedItemIds.has(i.id)).length}/
-                          {zone.zone_checklist_items.length} items
-                        </span>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-              {zonePhotos.length > 0 && (
-                <div className="flex gap-2 mt-2 flex-nowrap overflow-x-auto">
-                  {zonePhotos.map((p, i) => (
-                    <a
-                      key={i}
-                      href={p.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative shrink-0"
-                      title={p.isDuplicate ? "Matches a photo uploaded before — possible reused photo" : undefined}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={p.url}
-                        alt={`${zone.name} photo ${i + 1}`}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
-                      {p.isDuplicate && (
-                        <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
-                          reused
-                        </span>
-                      )}
-                    </a>
-                  ))}
-                </div>
-              )}
-              <ZoneChecklist
-                propertyId={id}
-                zoneSlug={zone.slug}
-                zoneName={zone.name}
-                items={zone.zone_checklist_items}
-              />
-              <ZoneSettings
-                propertyId={id}
-                zoneSlug={zone.slug}
-                taskDescription={zone.task_description}
-                requirePhoto={zone.require_photo}
-              />
-            </div>
-          );
-        })}
-        {zones.length === 0 && (
-          <p className="text-muted text-sm">
-            {setId
-              ? "This QR set has no zones defined."
-              : "No QR set claimed for this property yet."}
-          </p>
-        )}
-      </div>
-
-      <div className="border-t mt-8 pt-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-medium">Assigned cleaners</h2>
-          <Link href="/cleaners" className="text-xs text-muted underline">
-            Manage cleaner roster
-          </Link>
+          ))}
+          {zones.length === 0 && (
+            <p className="text-muted text-sm">
+              {setId
+                ? "This QR set has no zones defined."
+                : "No QR set claimed for this property yet."}
+            </p>
+          )}
         </div>
-        <CleanerAssignment
-          propertyId={id}
-          allCleaners={allCleaners ?? []}
-          assignedIds={Array.from(assignedIds)}
-        />
-      </div>
 
-      {history.length > 0 && (
-        <div className="border-t mt-8 pt-6">
+        <div className="border-t border-gray-800 mt-9 pt-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-medium">Turnover history</h2>
-            <Link href={`/history?property=${id}`} className="text-xs text-muted underline">
-              View full history
+            <h2 className="text-lg font-medium">Assigned cleaners</h2>
+            <Link href="/cleaners" className="text-xs text-green-400 hover:text-green-300">
+              Manage cleaner roster
             </Link>
           </div>
-          <div className="space-y-2">
-            {history.map((s) => {
-              const duration = formatDuration(s.job_started_at, s.job_finished_at);
-              const cleanerName = (s.cleaners as unknown as { name: string } | null)?.name;
-              const photos = (s.scan_events ?? []).flatMap((r) =>
-                (r.scan_event_photos ?? []).map((p) => ({
-                  zoneSlug: r.zone_slug,
-                  url: p.photo_url,
-                  isDuplicate: p.is_duplicate,
-                }))
-              );
-              return (
-                <div key={s.id} className="border rounded-lg px-4 py-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p>{new Date(s.started_at).toLocaleDateString()}</p>
-                      <p className="text-muted text-xs">
-                        {cleanerName ?? "No cleaner recorded"}
-                        {duration ? ` · ${duration}` : ""}
-                      </p>
-                    </div>
-                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                      Complete
-                    </span>
-                  </div>
-                  {photos.length > 0 && (
-                    <div className="flex gap-2 mt-3 flex-nowrap overflow-x-auto">
-                      {photos.map((p, i) => (
-                        <a
-                          key={i}
-                          href={p.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="relative block shrink-0"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={p.url}
-                            alt={`${zoneLabelBySlug.get(p.zoneSlug) ?? p.zoneSlug} photo`}
-                            title={
-                              p.isDuplicate
-                                ? "Matches a photo uploaded before — possible reused photo"
-                                : (zoneLabelBySlug.get(p.zoneSlug) ?? p.zoneSlug)
-                            }
-                            className="w-14 h-14 rounded object-cover border"
-                          />
-                          {p.isDuplicate && (
-                            <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
-                              reused
-                            </span>
-                          )}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <CleanerAssignment
+            propertyId={id}
+            allCleaners={allCleaners ?? []}
+            assignedIds={Array.from(assignedIds)}
+          />
         </div>
-      )}
+
+        {history.length > 0 && (
+          <div className="border-t border-gray-800 mt-9 pt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-medium">Turnover history</h2>
+              <Link href={`/history?property=${id}`} className="text-xs text-green-400 hover:text-green-300">
+                View full history
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {history.map((s) => {
+                const duration = formatDuration(s.job_started_at, s.job_finished_at);
+                const cleanerName = (s.cleaners as unknown as { name: string } | null)?.name;
+                const photos = (s.scan_events ?? []).flatMap((r) =>
+                  (r.scan_event_photos ?? []).map((p) => ({
+                    zoneSlug: r.zone_slug,
+                    url: p.photo_url,
+                    isDuplicate: p.is_duplicate,
+                  }))
+                );
+                return (
+                  <div key={s.id} className="border border-gray-800 rounded-xl px-4 py-3 text-sm bg-gray-950">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p>{new Date(s.started_at).toLocaleDateString()}</p>
+                        <p className="text-muted text-xs">
+                          {cleanerName ?? "No cleaner recorded"}
+                          {duration ? ` · ${duration}` : ""}
+                        </p>
+                      </div>
+                      <span className="text-xs bg-green-950 text-green-300 px-2.5 py-1 rounded-full whitespace-nowrap">
+                        Complete
+                      </span>
+                    </div>
+                    {photos.length > 0 && (
+                      <div className="flex gap-2 mt-3 flex-nowrap overflow-x-auto">
+                        {photos.map((p, i) => (
+                          <a
+                            key={i}
+                            href={p.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="relative block shrink-0"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={p.url}
+                              alt={`${zoneLabelBySlug.get(p.zoneSlug) ?? p.zoneSlug} photo`}
+                              title={
+                                p.isDuplicate
+                                  ? "Matches a photo uploaded before — possible reused photo"
+                                  : (zoneLabelBySlug.get(p.zoneSlug) ?? p.zoneSlug)
+                              }
+                              className="w-14 h-14 rounded object-cover border border-gray-700"
+                            />
+                            {p.isDuplicate && (
+                              <span className="absolute -bottom-1 -right-1 bg-black/90 text-amber-300 text-[8px] font-medium leading-none rounded-full px-1 py-0.5">
+                                reused
+                              </span>
+                            )}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }

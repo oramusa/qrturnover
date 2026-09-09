@@ -9,13 +9,16 @@ export default function ZoneSettings({
   zoneSlug,
   taskDescription,
   requirePhoto,
+  forceOpen,
 }: {
   propertyId: string;
   zoneSlug: string;
   taskDescription: string | null;
   requirePhoto: boolean;
+  forceOpen?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const isOpen = forceOpen || open;
   const [description, setDescription] = useState(taskDescription ?? "");
   const [require, setRequire] = useState(requirePhoto);
   const [saving, setSaving] = useState(false);
@@ -47,16 +50,21 @@ export default function ZoneSettings({
   }
 
   return (
-    <div className="mt-2">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="text-xs text-muted underline"
-      >
-        Zone settings
-      </button>
-      {open && (
+    <div className={forceOpen ? "" : "mt-2"}>
+      {!forceOpen && (
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="text-xs text-muted underline"
+        >
+          Zone settings
+        </button>
+      )}
+      {isOpen && (
         <div className="mt-2 border rounded-lg p-3 bg-gray-50 text-gray-900 space-y-2">
+          {forceOpen && (
+            <p className="text-xs font-medium text-gray-500">Zone settings</p>
+          )}
           <label className="block">
             <span className="text-xs text-gray-500">Task description</span>
             <input
