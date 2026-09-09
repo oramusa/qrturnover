@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+import { createStripeClient } from "@/lib/stripe";
 
 // Point your Stripe webhook (checkout.session.completed, customer.subscription.updated/
 // deleted) at {your domain}/api/stripe/webhook and paste the signing secret into
 // STRIPE_WEBHOOK_SECRET. This keeps hosts.subscription_status in sync with Stripe
 // so you can gate dashboard access on it.
 export async function POST(req: NextRequest) {
+  const stripe = createStripeClient();
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return NextResponse.json({ error: "Webhook is not configured" }, { status: 503 });
+  }
   const body = await req.text();
   const signature = req.headers.get("stripe-signature")!;
 
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: `Webhook signature verification failed` }, { status: 400 });
   }
 

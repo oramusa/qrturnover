@@ -6,6 +6,7 @@ import AppNav from "@/app/components/AppNav";
 
 const PAGE_SIZE = 20;
 const SUMMARY_CAP = 500;
+const MAX_REASONABLE_DURATION_MINUTES = 24 * 60;
 
 type ChecklistItem = { id: string; label: string };
 type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] };
@@ -38,14 +39,22 @@ function computeScore(
   const totalItems = totalItemsByProperty.get(s.property_id) ?? 0;
   if (totalItems === 0) return null;
   const completed = s.scan_item_completions?.length ?? 0;
+  // Sessions created before structured checklists were introduced have no
+  // item-completion rows. Showing those legacy sessions as 0% is misleading:
+  // there was no checklist score available at the time.
+  if (completed === 0) return null;
   return Math.round((Math.min(completed, totalItems) / totalItems) * 100);
 }
 
 function computeDurationMinutes(s: Pick<SessionRow, "job_started_at" | "job_finished_at">) {
   if (!s.job_started_at || !s.job_finished_at) return null;
-  return Math.round(
+  const minutes = Math.round(
     (new Date(s.job_finished_at).getTime() - new Date(s.job_started_at).getTime()) / 60000
   );
+  // Very long values usually mean a test or abandoned timer. Keep them from
+  // distorting both the displayed duration and the summary average.
+  if (minutes < 0 || minutes > MAX_REASONABLE_DURATION_MINUTES) return null;
+  return minutes;
 }
 
 function formatDuration(minutes: number) {
@@ -310,7 +319,7 @@ export default async function HistoryPage({
           <p className="text-xl font-semibold mt-1">{totalCount}</p>
         </div>
         <div className="border rounded-lg p-3">
-          <p className="text-xs text-muted">Average clean score</p>
+          <p className="text-xs text-muted">Average checklist completion</p>
           <p className="text-xl font-semibold mt-1">{avgScore !== null ? `${avgScore}%` : "—"}</p>
         </div>
         <div className="border rounded-lg p-3">

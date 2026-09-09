@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { createStripeClient } from "@/lib/stripe";
 
 // Creates an embedded Stripe Checkout session for the logged-in host to start
 // their subscription. Embedded (vs. hosted) mode keeps the payment form on
@@ -33,6 +32,7 @@ export async function POST() {
   }
 
   try {
+    const stripe = createStripeClient();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       ui_mode: "embedded_page",

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import NewCleanerForm from "./NewCleanerForm";
 import DeleteCleanerButton from "./DeleteCleanerButton";
 import AppNav from "@/app/components/AppNav";
+import AccessCode from "./AccessCode";
 
 export default async function CleanersPage() {
   const supabase = await createClient();
@@ -39,9 +40,7 @@ export default async function CleanersPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs font-mono bg-gray-100 text-gray-900 px-2 py-1 rounded">
-                    {cleaner.access_code}
-                  </span>
+                  <AccessCode code={cleaner.access_code} />
                   <DeleteCleanerButton cleanerId={cleaner.id} cleanerName={cleaner.name} />
                 </div>
               </div>

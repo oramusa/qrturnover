@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { createStripeClient } from "@/lib/stripe";
 
 // Creates a SetupIntent so the host can add/replace a card via the embedded
 // Payment Element on /account/billing, without leaving the app.
 export async function POST() {
+  const stripe = createStripeClient();
   const supabase = await createClient();
   const {
     data: { user },

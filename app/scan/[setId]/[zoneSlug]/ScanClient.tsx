@@ -47,7 +47,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
   }
 
   useEffect(() => {
-    load();
+    const initialLoad = window.setTimeout(() => void load(), 0);
 
     // A cleaner's scan link is often reopened via mobile browser
     // back/forward-cache (bfcache) or an already-backgrounded tab, neither of
@@ -60,6 +60,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
     window.addEventListener("pageshow", handleVisible);
     document.addEventListener("visibilitychange", handleVisible);
     return () => {
+      window.clearTimeout(initialLoad);
       window.removeEventListener("pageshow", handleVisible);
       document.removeEventListener("visibilitychange", handleVisible);
     };

@@ -1,11 +1,10 @@
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { createStripeClient } from "@/lib/stripe";
 import AppNav from "@/app/components/AppNav";
 import LocalTime from "@/app/properties/[id]/LocalTime";
 import PaymentMethodSection from "./PaymentMethodSection";
 import CancelSubscriptionButton from "./CancelSubscriptionButton";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 function formatMoney(amountCents: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amountCents / 100);
@@ -44,6 +43,7 @@ export default async function BillingPage() {
   // Treat that as "no billing data yet" instead of crashing the page.
   if (host?.stripe_customer_id) {
     try {
+      const stripe = createStripeClient();
       const subs = await stripe.subscriptions.list({
         customer: host.stripe_customer_id,
         status: "all",

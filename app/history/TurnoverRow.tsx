@@ -89,7 +89,7 @@ export default function TurnoverRow({
                     : "bg-red-100 text-red-800"
             }`}
           >
-            {score !== null ? `${score}% clean score` : "Complete"}
+            {score !== null ? `${score}% checklist completion` : "Complete"}
           </span>
         </div>
       </button>

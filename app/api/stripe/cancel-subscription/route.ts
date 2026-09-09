@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { createStripeClient } from "@/lib/stripe";
 
 // Toggles cancel-at-period-end on the host's subscription — cancelling
 // keeps access through the end of the current billing period rather than
 // cutting it off immediately; resume just flips it back.
 export async function POST(req: NextRequest) {
+  const stripe = createStripeClient();
   const { subscriptionId, resume } = await req.json();
   if (!subscriptionId || typeof subscriptionId !== "string") {
     return NextResponse.json({ error: "Missing subscriptionId" }, { status: 400 });

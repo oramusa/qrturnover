@@ -1,10 +1,8 @@
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { createStripeClient } from "@/lib/stripe";
 import AppNav from "@/app/components/AppNav";
 import BillingCard from "@/app/dashboard/BillingCard";
 import MailingAddressForm from "./MailingAddressForm";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 function formatMoney(amountCents: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amountCents / 100);
@@ -31,10 +29,18 @@ export default async function AccountPage({
     console.error("Failed to load host billing info:", hostError);
   }
 
-  const price = await stripe.prices.retrieve(process.env.STRIPE_PRICE_ID!);
-  const priceLabel = `${formatMoney(price.unit_amount ?? 0, price.currency)}${
-    price.recurring ? `/${price.recurring.interval}` : ""
-  }`;
+  let priceLabel = "$19.00/month";
+  if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRICE_ID) {
+    try {
+      const stripe = createStripeClient();
+      const price = await stripe.prices.retrieve(process.env.STRIPE_PRICE_ID);
+      priceLabel = `${formatMoney(price.unit_amount ?? 0, price.currency)}${
+        price.recurring ? `/${price.recurring.interval}` : ""
+      }`;
+    } catch (error) {
+      console.error("Failed to load Stripe price; using the configured display price", error);
+    }
+  }
 
   const now = new Date();
   const trialDaysLeft = host?.trial_ends_at

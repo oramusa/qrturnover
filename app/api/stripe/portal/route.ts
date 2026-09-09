@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { createStripeClient } from "@/lib/stripe";
 
 // Creates a Stripe billing portal session so an already-subscribed host can
 // update their payment method or cancel, without building custom UI for it.
 // Wire a "Manage subscription" button on the dashboard to POST here.
 export async function POST() {
+  const stripe = createStripeClient();
   const supabase = await createClient();
   const {
     data: { user },

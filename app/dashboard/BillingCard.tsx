@@ -20,7 +20,9 @@ export default function BillingCard({
         {isActive && <p className="text-sm font-medium">Subscribed — {priceLabel}</p>}
         {subscriptionStatus === "trialing" && trialDaysLeft !== null && (
           <p className="text-sm font-medium">
-            Trial ends in {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} — {priceLabel} after
+            {trialDaysLeft > 0
+              ? `Trial ends in ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} — ${priceLabel} after`
+              : `Your free trial has ended — subscribe for ${priceLabel} to continue`}
           </p>
         )}
         {needsAttention && (

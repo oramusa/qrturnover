@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { createStripeClient } from "@/lib/stripe";
 
 // Called after the client confirms a SetupIntent via the Payment Element —
 // makes that payment method the default for future invoices/renewals.
 export async function POST(req: NextRequest) {
+  const stripe = createStripeClient();
   const { paymentMethodId } = await req.json();
   if (!paymentMethodId || typeof paymentMethodId !== "string") {
     return NextResponse.json({ error: "Missing paymentMethodId" }, { status: 400 });
