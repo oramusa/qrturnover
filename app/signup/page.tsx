@@ -49,13 +49,18 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
-        <Link href="/" className="flex items-center gap-2 justify-center mb-8 group">
+        <Link href="/" className="flex items-center gap-2 justify-center mb-2 group">
           <span className="bg-white rounded-md p-1 flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-icon.png" alt="" className="w-6 h-6 object-contain" />
           </span>
           <span className="font-semibold tracking-tight group-hover:text-green-400 transition-colors">QRTurnover</span>
         </Link>
+        <p className="text-center mb-8">
+          <Link href="/" className="text-xs text-muted underline hover:text-green-400">
+            Home
+          </Link>
+        </p>
 
         <div className="border border-gray-800 rounded-xl bg-gray-950 p-6 sm:p-8">
           <h1 className="text-xl font-semibold mb-6">Create your host account</h1>
