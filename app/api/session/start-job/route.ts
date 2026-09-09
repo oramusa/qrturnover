@@ -12,12 +12,23 @@ export async function POST(req: NextRequest) {
 
   const { data: session } = await supabase
     .from("turnover_sessions")
-    .select("id, status, job_started_at, property_id, properties ( name, hosts ( email ) )")
+    .select("id, status, job_started_at, property_id, cleaner_id, properties ( name, hosts ( email ) )")
     .eq("id", sessionId)
     .single();
 
   if (!session || session.status !== "in_progress") {
     return NextResponse.json({ error: "Session not found or not active" }, { status: 400 });
+  }
+
+  const { data: assignment } = await supabase
+    .from("property_cleaners")
+    .select("cleaner_id")
+    .eq("property_id", session.property_id)
+    .eq("cleaner_id", cleanerId)
+    .maybeSingle();
+
+  if (!assignment || (session.cleaner_id && session.cleaner_id !== cleanerId)) {
+    return NextResponse.json({ error: "Cleaner is not assigned to this turnover" }, { status: 403 });
   }
   if (session.job_started_at) {
     return NextResponse.json({ ok: true }); // already started, no-op
@@ -29,10 +40,15 @@ export async function POST(req: NextRequest) {
     .eq("id", cleanerId)
     .single();
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("turnover_sessions")
     .update({ cleaner_id: cleanerId, job_started_at: new Date().toISOString() })
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .is("job_started_at", null);
+
+  if (updateError) {
+    return NextResponse.json({ error: "Couldn't start this job" }, { status: 500 });
+  }
 
   const property = session.properties as unknown as { name: string; hosts: { email: string } };
   const hostEmail = property?.hosts?.email;

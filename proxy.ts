@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -27,10 +27,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const protectedPaths = ["/dashboard", "/properties"];
-  const isProtected = protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p));
-
-  if (isProtected && !user) {
+  if (!user) {
     const originalPath = request.nextUrl.pathname + request.nextUrl.search;
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -43,5 +40,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/properties/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/properties/:path*",
+    "/cleaners/:path*",
+    "/history/:path*",
+    "/account/:path*",
+  ],
 };

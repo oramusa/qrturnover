@@ -8,7 +8,9 @@ import Link from "next/link";
 // full-resolution phone photos blow past that easily. Downscaling client-side
 // keeps the whole zone's photos well under that limit.
 async function compressImage(file: File, maxDimension = 1600, quality = 0.75): Promise<File> {
-  if (!file.type.startsWith("image/")) return file;
+  if (!file.type.startsWith("image/")) {
+    throw new Error("unsupported-file");
+  }
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
   const width = Math.round(bitmap.width * scale);
@@ -59,8 +61,12 @@ export default function ScanForm({
   async function addPhotos(files: FileList | null) {
     if (!files || files.length === 0) return;
     setError(null);
-    const compressed = await Promise.all(Array.from(files).map((f) => compressImage(f)));
-    setPhotos((prev) => [...prev, ...compressed]);
+    try {
+      const compressed = await Promise.all(Array.from(files).map((f) => compressImage(f)));
+      setPhotos((prev) => [...prev, ...compressed]);
+    } catch {
+      setError("One of these files could not be processed. Please choose a JPG, PNG, WebP, or HEIC photo.");
+    }
   }
 
   function removePhoto(index: number) {

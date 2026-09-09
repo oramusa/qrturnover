@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
   const cleanerId = formData.get("cleanerId") as string | null;
   const photos = formData.getAll("photos").filter((p): p is File => p instanceof File && p.size > 0);
 
-  if (!setId || !zoneSlug || !sessionId) {
-    return NextResponse.json({ error: "Missing setId, zoneSlug, or sessionId" }, { status: 400 });
+  if (!setId || !zoneSlug || !sessionId || !cleanerId) {
+    return NextResponse.json({ error: "Missing setId, zoneSlug, sessionId, or cleanerId" }, { status: 400 });
   }
 
   const supabase = createServiceRoleClient();
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   const { data: session } = await supabase
     .from("turnover_sessions")
-    .select("id, property_id, status")
+    .select("id, property_id, cleaner_id, status, job_started_at")
     .eq("id", sessionId)
     .single();
 
@@ -49,6 +49,25 @@ export async function POST(req: NextRequest) {
   }
 
   const propertyId = claim.property_id;
+
+  const [{ data: cleaner }, { data: assignment }] = await Promise.all([
+    supabase
+      .from("cleaners")
+      .select("id")
+      .eq("id", cleanerId)
+      .eq("host_id", (claim.properties as unknown as { host_id: string }).host_id)
+      .maybeSingle(),
+    supabase
+      .from("property_cleaners")
+      .select("cleaner_id")
+      .eq("property_id", propertyId)
+      .eq("cleaner_id", cleanerId)
+      .maybeSingle(),
+  ]);
+
+  if (!cleaner || !assignment || !session.job_started_at || session.cleaner_id !== cleanerId) {
+    return NextResponse.json({ error: "Cleaner is not assigned to this turnover" }, { status: 403 });
+  }
 
   const { data: zoneSettings } = await supabase
     .from("property_zone_settings")

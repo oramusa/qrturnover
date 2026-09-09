@@ -171,6 +171,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
                       body: JSON.stringify({
                         sessionId: activeSession?.id,
                         itemId: item.id,
+                        cleanerId: cleaner.id,
                         completed: checked,
                       }),
                     });

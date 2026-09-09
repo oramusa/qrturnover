@@ -39,6 +39,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Code not recognized" }, { status: 401 });
   }
 
+  const { data: assignment } = await supabase
+    .from("property_cleaners")
+    .select("cleaner_id")
+    .eq("property_id", claim.property_id)
+    .eq("cleaner_id", cleaner.id)
+    .maybeSingle();
+
+  if (!assignment) {
+    return NextResponse.json(
+      { error: "This cleaner is not assigned to this property" },
+      { status: 403 }
+    );
+  }
+
   const response = NextResponse.json({ ok: true, id: cleaner.id, name: cleaner.name });
   const cookieOpts = {
     httpOnly: false, // client needs to read it to show "Logged in as X"

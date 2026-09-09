@@ -3,9 +3,9 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
-  const { sessionId } = await req.json();
-  if (!sessionId) {
-    return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
+  const { sessionId, cleanerId } = await req.json();
+  if (!sessionId || !cleanerId) {
+    return NextResponse.json({ error: "Missing sessionId or cleanerId" }, { status: 400 });
   }
 
   const supabase = createServiceRoleClient();
@@ -29,6 +29,20 @@ export async function POST(req: NextRequest) {
       { error: "This turnover was already marked complete.", alreadyDone: true },
       { status: 400 }
     );
+  }
+  if (!session.job_started_at || session.cleaner_id !== cleanerId) {
+    return NextResponse.json({ error: "Cleaner is not assigned to this turnover" }, { status: 403 });
+  }
+
+  const { data: assignment } = await supabase
+    .from("property_cleaners")
+    .select("cleaner_id")
+    .eq("property_id", session.property_id)
+    .eq("cleaner_id", cleanerId)
+    .maybeSingle();
+
+  if (!assignment) {
+    return NextResponse.json({ error: "Cleaner is not assigned to this property" }, { status: 403 });
   }
 
   const { data: claim } = await supabase
@@ -63,14 +77,20 @@ export async function POST(req: NextRequest) {
 
   const finishedAt = new Date();
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("turnover_sessions")
     .update({
       job_finished_at: finishedAt.toISOString(),
       status: "complete",
       completed_at: finishedAt.toISOString(),
     })
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .eq("status", "in_progress")
+    .eq("cleaner_id", cleanerId);
+
+  if (updateError) {
+    return NextResponse.json({ error: "Couldn't finish this job" }, { status: 500 });
+  }
 
   const property = session.properties as unknown as { name: string; hosts: { email: string } };
   const cleaner = session.cleaners as unknown as { name: string } | null;

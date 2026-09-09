@@ -39,7 +39,7 @@ export default function JobControls({
     const res = await fetch("/api/session/finish-job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
+      body: JSON.stringify({ sessionId, cleanerId }),
     });
     setLoading(false);
     if (!res.ok) {

@@ -18,7 +18,6 @@ export default function ZoneChecklist({
 }) {
   const [open, setOpen] = useState(false);
   const isOpen = forceOpen || open;
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -83,7 +82,6 @@ export default function ZoneChecklist({
             onAdd={handleAdd}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            disabled={saving}
           />
           {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </div>
