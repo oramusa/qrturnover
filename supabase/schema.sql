@@ -589,10 +589,3 @@ alter publication supabase_realtime add table public.scan_event_photos;
 
 create unique index if not exists idx_turnover_sessions_one_active_per_property
   on public.turnover_sessions(property_id) where status = 'in_progress';
-
--- Checklist feature retired. Keep QR zones, room instructions, scan events,
--- proof photos, and turnover sessions; remove only checklist-specific data.
-drop table if exists public.scan_item_completions cascade;
-drop table if exists public.zone_checklist_items cascade;
-drop table if exists public.checklist_template_items cascade;
-drop table if exists public.checklist_templates cascade;

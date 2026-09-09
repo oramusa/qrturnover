@@ -100,8 +100,8 @@ export default function AirbnbTurnoverChecklistPost() {
           <h2 className="text-xl font-semibold pt-4">3 Concrete Benefits of This System</h2>
           <p>
             <span className="font-medium">1. The standard becomes clear.</span> What needs to be
-            done in each zone is written as a clear room instruction — the cleaner isn&apos;t
-            guessing, and you&apos;re not repeating the same guidance every time.
+            done in each zone is defined as an explicit checklist — the cleaner isn&apos;t
+            guessing, and you&apos;re not repeating the same instructions every time.
           </p>
           <p>
             <span className="font-medium">2. You catch problems before guests do.</span> In zones

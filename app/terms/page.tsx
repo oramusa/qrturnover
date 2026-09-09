@@ -27,7 +27,7 @@ export default function TermsPage() {
           <h2 className="font-medium mb-2">2. What QRTurnover does</h2>
           <p>
             QRTurnover lets short-term-rental hosts generate QR codes for each zone of a property,
-            track when a cleaner scans each zone, collect photo proof,
+            track when a cleaner scans each zone, collect checklist confirmations and photo proof,
             and review turnover history. It is a verification and record-keeping tool, not a
             cleaning service itself.
           </p>

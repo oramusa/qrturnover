@@ -33,11 +33,11 @@ export default function PrivacyPage() {
             </li>
             <li>
               <span className="font-medium">Property and zone data:</span> property names,
-              addresses, room instructions, and the QR zones you configure.
+              addresses, cleaning checklists, and the QR zones you configure.
             </li>
             <li>
               <span className="font-medium">Scan and photo data:</span> when a cleaner scans a QR
-              code, we record the time, the room verified, and any photos they upload as
+              code, we record the time, the checklist items completed, and any photos they upload as
               proof of cleaning.
             </li>
             <li>

@@ -33,6 +33,7 @@ export default function ScanForm({
   sessionId,
   cleanerId,
   requirePhoto,
+  allItemsChecked,
   otherZones,
 }: {
   setId: string;
@@ -40,6 +41,7 @@ export default function ScanForm({
   sessionId: string;
   cleanerId: string;
   requirePhoto?: boolean;
+  allItemsChecked: boolean;
   otherZones: { slug: string; name: string; done: boolean }[];
 }) {
   const router = useRouter();
@@ -180,10 +182,13 @@ export default function ScanForm({
         </div>
       )}
 
+      {!allItemsChecked && (
+        <p className="text-xs text-amber-700">Check off every item above before marking this zone done.</p>
+      )}
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <button
         type="submit"
-        disabled={status === "submitting"}
+        disabled={status === "submitting" || !allItemsChecked}
         className="w-full bg-black text-white rounded py-3 font-medium disabled:opacity-50"
       >
         {status === "submitting" ? "Submitting..." : "Mark done"}

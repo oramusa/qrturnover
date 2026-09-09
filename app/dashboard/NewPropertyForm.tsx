@@ -71,6 +71,35 @@ export default function NewPropertyForm() {
       return;
     }
 
+    const { data: setZones } = await supabase
+      .from("qr_set_zones")
+      .select("zone_slug, zone_label")
+      .eq("set_id", setId);
+
+    if (setZones && setZones.length > 0) {
+      const { data: templates } = await supabase
+        .from("checklist_templates")
+        .select("id, room_type, checklist_template_items ( label, sort_order )")
+        .eq("host_id", user.id);
+
+      const rowsToInsert = setZones.flatMap((zone) => {
+        const match = templates?.find(
+          (t) => t.room_type.toLowerCase() === zone.zone_label.toLowerCase()
+        );
+        if (!match || match.checklist_template_items.length === 0) return [];
+        return match.checklist_template_items.map((item) => ({
+          property_id: property.id,
+          zone_slug: zone.zone_slug,
+          label: item.label,
+          sort_order: item.sort_order,
+        }));
+      });
+
+      if (rowsToInsert.length > 0) {
+        await supabase.from("zone_checklist_items").insert(rowsToInsert);
+      }
+    }
+
     fetch("/api/notify-new-property", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

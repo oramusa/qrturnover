@@ -9,6 +9,7 @@ type SessionData = {
     slug: string;
     name: string;
     task_description: string | null;
+    checklist: { id: string; label: string; completed: boolean }[];
     require_photo: boolean;
     property_name: string;
   };
@@ -24,6 +25,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
   const [code, setCode] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [checklistError, setChecklistError] = useState<string | null>(null);
 
   async function load() {
     const cleanerId = localStorage.getItem("cleaner_id");
@@ -50,7 +52,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
     // A cleaner's scan link is often reopened via mobile browser
     // back/forward-cache (bfcache) or an already-backgrounded tab, neither of
     // which re-runs this effect — so a host's edit (task description, photo
-    // requirement) made while that page sat idle would never show
+    // requirement, checklist) made while that page sat idle would never show
     // up. Re-fetch whenever the page becomes visible/active again.
     function handleVisible() {
       if (document.visibilityState === "visible") load();
@@ -146,6 +148,48 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
 
       <h1 className="text-2xl font-semibold">{zone.name}</h1>
       {zone.task_description && <p className="text-muted mt-2">{zone.task_description}</p>}
+      {zone.checklist.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {zone.checklist.map((item) => (
+            <li key={item.id}>
+              <label
+                className={`flex items-center gap-3 rounded-lg border px-4 py-3 bg-white text-gray-900 text-base ${
+                  activeSession ? "active:bg-gray-100" : "opacity-50"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={item.completed}
+                  disabled={!activeSession}
+                  className="w-6 h-6 shrink-0 accent-black"
+                  onChange={async (e) => {
+                    const checked = e.target.checked;
+                    setChecklistError(null);
+                    const res = await fetch("/api/scan-item", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        sessionId: activeSession?.id,
+                        itemId: item.id,
+                        completed: checked,
+                      }),
+                    });
+                    if (!res.ok) {
+                      setChecklistError("Couldn't save that — please try again.");
+                    }
+                    load();
+                  }}
+                />
+                <span className={item.completed ? "line-through text-gray-500" : ""}>
+                  {item.label}
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      )}
+      {checklistError && <p className="text-red-600 text-sm mt-1">{checklistError}</p>}
+
       {!activeSession ? (
         <p className="mt-6 text-sm text-amber-700 bg-amber-50 rounded p-3">
           {lastTurnoverJustFinished
@@ -173,6 +217,7 @@ export default function ScanClient({ setId, zoneSlug }: { setId: string; zoneSlu
               sessionId={activeSession.id}
               cleanerId={cleaner.id}
               requirePhoto={zone.require_photo}
+              allItemsChecked={zone.checklist.every((i) => i.completed)}
               otherZones={data.otherZones}
             />
           )}

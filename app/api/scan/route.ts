@@ -64,6 +64,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const { data: checklistItems, error: checklistItemsError } = await supabase
+    .from("zone_checklist_items")
+    .select("id")
+    .eq("property_id", propertyId)
+    .eq("zone_slug", zoneSlug);
+
+  if (checklistItemsError) {
+    return NextResponse.json({ error: checklistItemsError.message }, { status: 500 });
+  }
+
+  if (checklistItems && checklistItems.length > 0) {
+    const { data: completions } = await supabase
+      .from("scan_item_completions")
+      .select("item_id")
+      .eq("session_id", sessionId)
+      .in("item_id", checklistItems.map((i) => i.id));
+
+    const remaining = checklistItems.length - (completions?.length ?? 0);
+    if (remaining > 0) {
+      return NextResponse.json(
+        { error: `${remaining} checklist item${remaining === 1 ? "" : "s"} still need${remaining === 1 ? "s" : ""} to be checked off` },
+        { status: 400 }
+      );
+    }
+  }
+
   // Upsert so re-scanning the same zone just updates the timestamp instead of erroring.
   // Photos always accumulate in scan_event_photos below, regardless of how many
   // times this zone gets scanned in the same session.
