@@ -85,7 +85,7 @@ export default function NewPropertyForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="border rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-50 hover:text-gray-900"
+        className="bg-green-600 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-green-500 shadow-lg shadow-green-950/30"
       >
         + Add property
       </button>
@@ -93,21 +93,21 @@ export default function NewPropertyForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-lg p-4 space-y-3 max-w-sm bg-white text-gray-900">
+    <form onSubmit={handleSubmit} className="border border-gray-800 rounded-xl p-4 space-y-3 max-w-sm bg-gray-950 text-white">
       <input
         placeholder="Property name (e.g. Lakeview Apt 2B)"
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
+        className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-gray-900 text-white"
       />
       <input
         placeholder="Address (optional)"
         value={address}
         onChange={(e) => setAddress(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
+        className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-gray-900 text-white"
       />
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-muted">
         The next available QR sticker set will be automatically assigned to this property.
       </p>
       {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -115,14 +115,14 @@ export default function NewPropertyForm() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
+          className="bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg px-4 py-2.5 disabled:opacity-50"
         >
           {loading ? "Creating..." : "Create property"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-sm text-gray-500"
+          className="text-sm text-muted hover:text-white px-2"
         >
           Cancel
         </button>

@@ -82,28 +82,34 @@ export default async function DashboardPage() {
       <div className="max-w-5xl mx-auto p-6 sm:py-10">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-500 mb-2">
+              Portfolio
+            </p>
             <h1 className="text-3xl font-semibold">Your properties</h1>
-            <p className="text-sm text-muted mt-1">Monitor every turnover from one place.</p>
+            <p className="text-sm text-muted mt-2 max-w-xl">Monitor every turnover from one place.</p>
           </div>
           <NewPropertyForm />
         </div>
 
         <div className="grid sm:grid-cols-3 gap-3 mt-7">
-          <div className="border rounded-xl p-4">
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
             <p className="text-xs text-muted">Properties</p>
             <p className="text-2xl font-semibold mt-1">{properties?.length ?? 0}</p>
           </div>
-          <div className="border rounded-xl p-4">
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
             <p className="text-xs text-muted">Turnovers in progress</p>
-            <p className="text-2xl font-semibold mt-1">{activeSessions.length}</p>
+            <p className="text-2xl font-semibold mt-1 text-green-400">{activeSessions.length}</p>
           </div>
-          <div className="border rounded-xl p-4">
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
             <p className="text-xs text-muted">Completed this month</p>
             <p className="text-2xl font-semibold mt-1">{completedThisMonth ?? 0}</p>
           </div>
         </div>
 
-        <h2 className="text-lg font-medium mt-9">Property status</h2>
+        <div className="mt-9">
+          <h2 className="text-lg font-medium">Property status</h2>
+          <p className="text-xs text-muted mt-1">Open a property to manage its zones and live turnover.</p>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-4 mt-3">
           {properties?.length === 0 && (
@@ -127,12 +133,12 @@ export default async function DashboardPage() {
               <Link
                 key={property.id}
                 href={`/properties/${property.slug ?? property.id}`}
-                className="group border rounded-xl p-5 hover:bg-gray-50 hover:text-gray-900"
+                className="group border border-gray-800 rounded-xl p-5 bg-gray-950 hover:bg-gray-900 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="font-medium break-words">{property.name}</h3>
-                    <p className="text-xs text-muted group-hover:text-gray-500 mt-1 break-words">
+                    <p className="text-xs text-muted mt-1 break-words">
                       {zoneCount} zone{zoneCount === 1 ? "" : "s"}
                       {property.address ? ` · ${property.address}` : ""}
                     </p>
@@ -140,30 +146,30 @@ export default async function DashboardPage() {
                   <span
                     className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap ${
                       activeSession
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-green-100 text-green-800"
+                        ? "bg-amber-950 text-amber-300"
+                        : "bg-green-950 text-green-300"
                     }`}
                   >
                     {activeSession ? "Turnover in progress" : "Ready"}
                   </span>
                 </div>
 
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden mt-5">
+                <div className="h-2 bg-gray-800 rounded-full overflow-hidden mt-5">
                   <div
-                    className="h-full bg-green-600 rounded-full"
+                    className="h-full bg-green-500 rounded-full"
                     style={{ width: `${progress}%` }}
                     aria-hidden="true"
                   />
                 </div>
                 <div className="flex items-center justify-between gap-3 mt-3 text-xs">
-                  <span className="text-muted group-hover:text-gray-500">
+                  <span className="text-muted">
                     {activeSession
                       ? `${scannedCount} of ${zoneCount} zones verified`
                       : zoneCount > 0
                         ? "Ready for the next turnover"
                         : "Add zones to finish setup"}
                   </span>
-                  <span className="font-medium text-green-700">
+                  <span className="font-medium text-green-400">
                     {activeSession ? "View live →" : "Open →"}
                   </span>
                 </div>
