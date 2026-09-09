@@ -47,49 +47,64 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm mt-24 p-6">
-      <h1 className="text-2xl font-semibold mb-6">Create your host account</h1>
-      <form onSubmit={handleSignup} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2 bg-white text-gray-900"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          required
-          minLength={6}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2 bg-white text-gray-900"
-        />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-black text-white rounded py-2 disabled:opacity-50"
-        >
-          {loading ? "Creating account..." : "Start free trial"}
-        </button>
-      </form>
-      <p className="text-xs text-muted mt-4">
-        By creating an account, you agree to our{" "}
-        <Link href="/terms" className="underline">
-          Terms of Use
-        </Link>{" "}
-        and{" "}
-        <Link href="/privacy" className="underline">
-          Privacy Policy
-        </Link>
-        .
-      </p>
-      <p className="text-sm text-muted mt-4">
-        Already have an account? <a href="/login" className="underline">Log in</a>
-      </p>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-sm">
+        <div className="flex items-center gap-2 justify-center mb-8">
+          <span className="bg-white rounded-md p-1 flex items-center justify-center shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-icon.png" alt="" className="w-6 h-6 object-contain" />
+          </span>
+          <span className="font-semibold tracking-tight">QRTurnover</span>
+        </div>
+
+        <div className="border border-gray-800 rounded-xl bg-gray-950 p-6 sm:p-8">
+          <h1 className="text-xl font-semibold mb-6">Create your host account</h1>
+          <form onSubmit={handleSignup} className="space-y-3">
+            <input
+              type="email"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
+            />
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg py-2 disabled:opacity-50 transition-colors"
+            >
+              {loading ? "Creating account..." : "Start free trial"}
+            </button>
+          </form>
+          <p className="text-xs text-muted mt-5">
+            By creating an account, you agree to our{" "}
+            <Link href="/terms" className="text-green-400 hover:text-green-300">
+              Terms of Use
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-green-400 hover:text-green-300">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+          <p className="text-sm text-muted mt-4">
+            Already have an account?{" "}
+            <a href="/login" className="text-green-400 hover:text-green-300">
+              Log in
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
