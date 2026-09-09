@@ -7,7 +7,10 @@ export default function Home() {
     <AuthModalProvider>
     <main>
       <header className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-lg">QRTurnover</Link>
+        <Link href="/" aria-label="QRTurnover home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand-logo-dark.png" alt="QRTurnover" className="w-44 h-11 object-contain object-left" />
+        </Link>
         <nav className="flex items-center gap-4 text-sm" aria-label="Main navigation">
           <a href="#how-it-works" className="hidden sm:inline text-muted hover:underline">How it works</a>
           <a href="#pricing" className="hidden sm:inline text-muted hover:underline">Pricing</a>

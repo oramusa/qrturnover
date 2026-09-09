@@ -15,12 +15,13 @@ export default function AppNav({
   return (
     <header className="border-b border-gray-800">
       <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight shrink-0">
-          <span className="bg-white rounded-md p-1 flex items-center justify-center shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-icon.png" alt="" className="w-6 h-6 object-contain" />
-          </span>
-          <span className="whitespace-nowrap">QRTurnover</span>
+        <Link href="/dashboard" className="flex items-center shrink-0" aria-label="QRTurnover dashboard">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand-logo-dark.png"
+            alt="QRTurnover"
+            className="w-40 h-10 object-contain object-left"
+          />
         </Link>
         <nav className="flex items-center gap-1 text-sm overflow-x-auto flex-nowrap min-w-0 ml-auto">
           {NAV_ITEMS.map((item) => (

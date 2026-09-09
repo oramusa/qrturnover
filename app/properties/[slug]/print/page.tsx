@@ -67,9 +67,9 @@ export default async function PrintSheetPage({
         &larr; Back to property
       </Link>
 
-      <div className="flex items-center gap-3 mt-4 mb-2 flex-wrap print:mt-0">
+      <div className="flex items-center gap-4 mt-4 mb-2 flex-wrap print:mt-0 print:mb-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="QRTurnover" className="w-10 h-10 object-contain print:hidden" />
+        <img src="/brand-logo-light.png" alt="QRTurnover" className="w-44 h-14 object-contain object-left bg-white rounded-lg px-2" />
         <h1 className="text-2xl font-semibold break-words">
           Print QR codes — {property?.name}
         </h1>
