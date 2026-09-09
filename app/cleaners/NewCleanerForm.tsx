@@ -56,7 +56,7 @@ export default function NewCleanerForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="border rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-50 hover:text-gray-900"
+        className="bg-green-600 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-green-500 shadow-lg shadow-green-950/30"
       >
         + Add cleaner
       </button>
@@ -64,26 +64,26 @@ export default function NewCleanerForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-lg p-4 space-y-3 max-w-sm bg-white text-gray-900">
+    <form onSubmit={handleSubmit} className="border border-gray-700 rounded-xl p-4 space-y-3 w-full sm:w-96 bg-gray-950">
       <input
         placeholder="Cleaner's name"
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
+        className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-gray-900 text-white"
       />
       <input
         placeholder="Phone or email (optional)"
         value={contact}
         onChange={(e) => setContact(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm bg-white text-gray-900"
+        className="w-full border border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-gray-900 text-white"
       />
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={loading}
-          className="bg-black text-white text-sm rounded px-4 py-2 disabled:opacity-50"
+          className="bg-green-600 text-white text-sm rounded-lg px-4 py-2 disabled:opacity-50"
         >
           {loading ? "Adding..." : "Add cleaner"}
         </button>

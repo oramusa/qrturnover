@@ -33,7 +33,7 @@ export default function DeleteCleanerButton({
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="text-xs text-muted hover:text-red-600 disabled:opacity-50"
+      className="text-xs text-gray-500 hover:text-red-400 disabled:opacity-50 shrink-0"
     >
       Remove
     </button>

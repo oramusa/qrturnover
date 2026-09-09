@@ -142,26 +142,27 @@ export default function TemplateCard({
   }
 
   return (
-    <div className="border rounded-lg p-4">
+    <div className="border border-gray-800 rounded-xl p-5 bg-gray-950">
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="text-left font-medium"
+          className="text-left font-medium flex items-center gap-3"
         >
-          {roomType} <span className="text-xs text-muted">({items.length} items)</span>
+          <span className="w-9 h-9 rounded-lg bg-green-950 text-green-300 flex items-center justify-center" aria-hidden="true">✓</span>
+          <span>{roomType}<span className="block text-xs text-muted font-normal mt-0.5">{items.length} item{items.length === 1 ? "" : "s"}</span></span>
         </button>
         <button
           type="button"
           onClick={handleDeleteTemplate}
           disabled={deleting}
-          className="text-xs text-muted hover:text-red-600 disabled:opacity-50"
+          className="text-xs text-gray-500 hover:text-red-400 disabled:opacity-50"
         >
           Delete template
         </button>
       </div>
       {open && (
-        <div className="mt-3 border rounded-lg p-3 bg-gray-50 text-gray-900">
+        <div className="mt-4 border-t border-gray-800 pt-4">
           <ChecklistItemsEditor
             items={items}
             onAdd={handleAdd}

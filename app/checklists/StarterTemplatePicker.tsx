@@ -72,25 +72,29 @@ export default function StarterTemplatePicker() {
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-sm font-medium mb-1">Start from a template pack</h2>
-      <p className="text-xs text-muted mb-3">
-        Seeds Kitchen, Bathroom, Bedroom, and Living Room templates with this pack&apos;s
-        items — you can add, edit, or remove items afterward. Picking a pack replaces the
-        items in any templates you already have for those room types.
-      </p>
+    <div className="mt-9">
+      <div className="flex items-end justify-between gap-4 mb-4">
+        <div>
+          <h2 className="text-lg font-medium">Start with a proven pack</h2>
+          <p className="text-xs text-muted mt-1">Set up four room templates in one click, then customize every task.</p>
+        </div>
+        <span className="hidden sm:block text-[11px] text-gray-500">Replaces matching templates</span>
+      </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        {STARTER_TEMPLATE_PACKS.map((pack) => (
-          <div key={pack.id} className="border rounded-lg p-4 flex flex-col">
+        {STARTER_TEMPLATE_PACKS.map((pack, index) => (
+          <div key={pack.id} className={`border rounded-xl p-5 flex flex-col bg-gray-950 ${index === 1 ? "border-green-700 ring-1 ring-green-900" : "border-gray-800"}`}>
             <div className="flex-1">
-              <p className="font-medium">{pack.name}</p>
-              <p className="text-xs text-muted mt-1">{pack.description}</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium">{pack.name}</p>
+                {index === 1 && <span className="text-[10px] uppercase tracking-wider text-green-300 bg-green-950 rounded-full px-2 py-1">Recommended</span>}
+              </div>
+              <p className="text-xs text-muted mt-2 leading-relaxed min-h-12">{pack.description}</p>
             </div>
             <button
               type="button"
               onClick={() => applyPack(pack.id)}
               disabled={applyingId !== null}
-              className="mt-3 text-sm border rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 w-full"
+              className={`mt-4 text-sm rounded-lg px-3 py-2.5 disabled:opacity-50 w-full font-medium ${index === 1 ? "bg-green-600 text-white hover:bg-green-500" : "border border-gray-700 hover:border-gray-500"}`}
             >
               {applyingId === pack.id ? "Applying..." : "Use this pack"}
             </button>

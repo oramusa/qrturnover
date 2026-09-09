@@ -13,9 +13,9 @@ export default function AccessCode({ code }: { code: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       <span
-        className="min-w-16 text-center text-xs font-mono bg-gray-100 text-gray-900 px-2 py-1 rounded"
+        className="min-w-24 text-center text-sm tracking-[0.2em] font-mono bg-gray-900 text-white border border-gray-700 px-3 py-2 rounded-lg"
         aria-label={visible ? `Access code ${code}` : "Access code hidden"}
       >
         {visible ? code : "•••••"}
@@ -23,11 +23,11 @@ export default function AccessCode({ code }: { code: string }) {
       <button
         type="button"
         onClick={() => setVisible((value) => !value)}
-        className="text-xs underline text-muted"
+        className="text-xs font-medium border border-gray-700 rounded-lg px-3 py-2 hover:border-gray-500"
       >
         {visible ? "Hide" : "Show"}
       </button>
-      <button type="button" onClick={copyCode} className="text-xs underline text-muted">
+      <button type="button" onClick={copyCode} className="text-xs font-medium text-green-400 px-2 py-2 hover:text-green-300">
         {copied ? "Copied" : "Copy"}
       </button>
     </div>
