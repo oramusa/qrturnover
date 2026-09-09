@@ -1,14 +1,17 @@
 import Link from "next/link";
+import AuthModalProvider from "./components/AuthModal";
+import AuthTriggerButton from "./components/AuthTriggerButton";
 
 export default function Home() {
   return (
+    <AuthModalProvider>
     <main>
       <header className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
         <Link href="/" className="font-semibold text-lg">QRTurnover</Link>
         <nav className="flex items-center gap-4 text-sm" aria-label="Main navigation">
           <a href="#how-it-works" className="hidden sm:inline text-muted hover:underline">How it works</a>
           <a href="#pricing" className="hidden sm:inline text-muted hover:underline">Pricing</a>
-          <Link href="/login" className="border rounded-lg px-4 py-2">Log in</Link>
+          <AuthTriggerButton mode="login" className="border rounded-lg px-4 py-2">Log in</AuthTriggerButton>
         </nav>
       </header>
 
@@ -23,9 +26,9 @@ export default function Home() {
             and uploads photos. You follow the turnover live—without repeated calls or texts.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/signup" className="bg-black text-white rounded-lg px-6 py-3 font-medium">
+            <AuthTriggerButton mode="signup" className="bg-black text-white rounded-lg px-6 py-3 font-medium">
               Start free 14-day trial
-            </Link>
+            </AuthTriggerButton>
             <a href="#how-it-works" className="border rounded-lg px-6 py-3 font-medium">See how it works</a>
           </div>
           <p className="text-sm text-muted mt-4">No credit card required. Set up your first property in minutes.</p>
@@ -91,12 +94,13 @@ export default function Home() {
           <p className="text-sm font-medium text-emerald-700">Simple pricing</p>
           <h2 className="text-3xl font-bold mt-2">$19 per month</h2>
           <p className="text-muted mt-3">Unlimited properties, zones, cleaners, QR codes, and turnover history.</p>
-          <Link href="/signup" className="inline-block bg-black text-white rounded-lg px-6 py-3 font-medium mt-6">
+          <AuthTriggerButton mode="signup" className="inline-block bg-black text-white rounded-lg px-6 py-3 font-medium mt-6">
             Start free for 14 days
-          </Link>
+          </AuthTriggerButton>
           <p className="text-xs text-muted mt-3">No credit card required to start.</p>
         </div>
       </section>
     </main>
+    </AuthModalProvider>
   );
 }
