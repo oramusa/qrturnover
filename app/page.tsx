@@ -12,6 +12,9 @@ export default function Home() {
           <a href="#how-it-works" className="hidden sm:inline text-muted hover:underline">How it works</a>
           <a href="#pricing" className="hidden sm:inline text-muted hover:underline">Pricing</a>
           <AuthTriggerButton mode="login" className="border rounded-lg px-4 py-2">Log in</AuthTriggerButton>
+          <AuthTriggerButton mode="signup" className="bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2 font-medium transition-colors">
+            Start free trial
+          </AuthTriggerButton>
         </nav>
       </header>
 
