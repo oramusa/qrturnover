@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -37,13 +38,13 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
-        <div className="flex items-center gap-2 justify-center mb-8">
+        <Link href="/" className="flex items-center gap-2 justify-center mb-8">
           <span className="bg-white rounded-md p-1 flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-icon.png" alt="" className="w-6 h-6 object-contain" />
           </span>
           <span className="font-semibold tracking-tight">QRTurnover</span>
-        </div>
+        </Link>
 
         <div className="border border-gray-800 rounded-xl bg-gray-950 p-6 sm:p-8">
           <h1 className="text-xl font-semibold mb-6">Set a new password</h1>
