@@ -13,7 +13,7 @@ export default async function DashboardPage() {
     .from("properties")
     .select(
       `
-      id, name, address,
+      id, name, slug, address,
       turnover_sessions ( id, status, started_at )
     `
     )
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
             return (
               <Link
                 key={property.id}
-                href={`/properties/${property.id}`}
+                href={`/properties/${property.slug ?? property.id}`}
                 className="group border rounded-xl p-5 hover:bg-gray-50 hover:text-gray-900"
               >
                 <div className="flex items-start justify-between gap-3">

@@ -33,8 +33,16 @@ create table if not exists public.properties (
   host_id uuid not null references public.hosts(id) on delete cascade,
   name text not null,
   address text,
+  -- URL-friendly identifier (e.g. "corum") so /properties/{slug} reads as the
+  -- property name instead of its raw uuid. Generated once at creation and
+  -- never changed automatically — internal relations (zones, sessions, etc.)
+  -- all key off the uuid `id` above, never this column.
+  slug text,
   created_at timestamptz default now()
 );
+
+alter table public.properties add column if not exists slug text;
+create unique index if not exists idx_properties_host_slug on public.properties(host_id, slug);
 
 create table if not exists public.zones (
   id uuid primary key default gen_random_uuid(),

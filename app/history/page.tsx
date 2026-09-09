@@ -26,6 +26,7 @@ type SessionRow = {
   properties: {
     id: string;
     name: string;
+    slug: string | null;
   } | null;
   cleaners: { name: string } | null;
   scan_item_completions: { item_id: string }[] | null;
@@ -243,7 +244,7 @@ export default async function HistoryPage({
       .from("turnover_sessions")
       .select(
         `id, property_id, started_at, job_started_at, job_finished_at,
-         properties ( id, name ),
+         properties ( id, name, slug ),
          cleaners ( name ),
          scan_item_completions ( item_id ),
          scan_events ( zone_slug, scanned_at, cleaners ( name ), scan_event_photos ( photo_url, is_duplicate ) )`,
@@ -427,7 +428,7 @@ export default async function HistoryPage({
                   <TurnoverRow
                     key={s.id}
                     sessionId={s.id}
-                    propertyId={s.properties?.id ?? ""}
+                    propertySlug={s.properties?.slug ?? s.properties?.id ?? ""}
                     propertyName={s.properties?.name ?? "Unknown property"}
                     cleanerName={s.cleaners?.name ?? null}
                     startedAt={s.started_at}

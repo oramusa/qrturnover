@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe";
 import AppNav from "@/app/components/AppNav";
-import LocalTime from "@/app/properties/[id]/LocalTime";
+import LocalTime from "@/app/properties/[slug]/LocalTime";
 import PaymentMethodSection from "./PaymentMethodSection";
 import CancelSubscriptionButton from "./CancelSubscriptionButton";
 

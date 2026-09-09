@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import LocalTime from "@/app/properties/[id]/LocalTime";
+import LocalTime from "@/app/properties/[slug]/LocalTime";
 
 type ChecklistItem = { id: string; label: string };
 type Zone = { slug: string; name: string; zone_checklist_items: ChecklistItem[] };
@@ -17,7 +17,7 @@ type ScanRecord = {
 
 export default function TurnoverRow({
   sessionId,
-  propertyId,
+  propertySlug,
   propertyName,
   cleanerName,
   startedAt,
@@ -28,7 +28,7 @@ export default function TurnoverRow({
   completedItemIds,
 }: {
   sessionId: string;
-  propertyId: string;
+  propertySlug: string;
   propertyName: string;
   cleanerName: string | null;
   startedAt: string;
@@ -157,7 +157,7 @@ export default function TurnoverRow({
             );
           })}
           <div className="flex items-center justify-between gap-3 pt-1">
-            <Link href={`/properties/${propertyId}`} className="text-sm text-green-400 hover:text-green-300">
+            <Link href={`/properties/${propertySlug}`} className="text-sm text-green-400 hover:text-green-300">
               Open property page
             </Link>
             <button

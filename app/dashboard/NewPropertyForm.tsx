@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { slugify } from "@/lib/slugify";
 
 export default function NewPropertyForm() {
   const [name, setName] = useState("");
@@ -28,9 +29,22 @@ export default function NewPropertyForm() {
       return;
     }
 
+    const { data: existingProps } = await supabase
+      .from("properties")
+      .select("slug")
+      .eq("host_id", user.id);
+    const existingSlugs = new Set((existingProps ?? []).map((p) => p.slug).filter(Boolean));
+    const base = slugify(name) || "property";
+    let slug = base;
+    let n = 2;
+    while (existingSlugs.has(slug)) {
+      slug = `${base}-${n}`;
+      n++;
+    }
+
     const { data: property, error: insertError } = await supabase
       .from("properties")
-      .insert({ host_id: user.id, name, address: address || null })
+      .insert({ host_id: user.id, name, address: address || null, slug })
       .select()
       .single();
 
@@ -93,7 +107,7 @@ export default function NewPropertyForm() {
     }).catch(() => {});
 
     setLoading(false);
-    router.push(`/properties/${property.id}`);
+    router.push(`/properties/${property.slug}`);
   }
 
   if (!open) {

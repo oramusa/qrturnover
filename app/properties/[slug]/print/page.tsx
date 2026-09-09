@@ -9,9 +9,9 @@ import { getHostSetNumber } from "@/lib/setLabel";
 export default async function PrintSheetPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
+  const { slug } = await params;
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,9 +19,14 @@ export default async function PrintSheetPage({
 
   const { data: property } = await supabase
     .from("properties")
-    .select("name")
-    .eq("id", id)
+    .select("id, name")
+    .eq("slug", slug)
     .single();
+
+  if (!property) {
+    return <div className="p-6">Property not found.</div>;
+  }
+  const id = property.id;
 
   const { data: claim } = await supabase
     .from("property_set_claims")
@@ -56,7 +61,7 @@ export default async function PrintSheetPage({
       </div>
       <div className="max-w-3xl mx-auto p-6 print:p-0">
       <Link
-        href={`/properties/${id}`}
+        href={`/properties/${slug}`}
         className="text-sm text-muted underline print:hidden"
       >
         &larr; Back to property

@@ -21,9 +21,9 @@ function formatDuration(startedAt: string | null, finishedAt: string | null) {
 export default async function PropertyPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
+  const { slug } = await params;
   const supabase = await createClient();
   const {
     data: { user },
@@ -32,8 +32,13 @@ export default async function PropertyPage({
   const { data: property } = await supabase
     .from("properties")
     .select("id, name, address")
-    .eq("id", id)
+    .eq("slug", slug)
     .single();
+
+  if (!property) {
+    return <div className="p-6">Property not found.</div>;
+  }
+  const id = property.id;
 
   const { data: claim } = await supabase
     .from("property_set_claims")
@@ -136,10 +141,6 @@ export default async function PropertyPage({
     : { data: [] as { item_id: string }[] };
   const completedItemIds = new Set((itemCompletions ?? []).map((c) => c.item_id));
 
-  if (!property) {
-    return <div className="p-6">Property not found.</div>;
-  }
-
   return (
     <div>
       <AppNav current="/dashboard" />
@@ -156,7 +157,7 @@ export default async function PropertyPage({
           </div>
           <div className="flex items-center gap-4 shrink-0">
             <Link
-              href={`/properties/${id}/print`}
+              href={`/properties/${slug}/print`}
               className="text-sm border border-gray-700 rounded-lg px-3 py-2 hover:bg-gray-900"
             >
               Print QR sheet
