@@ -83,9 +83,10 @@ export default function StartTurnoverButton({
     }
 
     setLoading(true);
+    const finishedAt = new Date().toISOString();
     await supabase
       .from("turnover_sessions")
-      .update({ status: "complete", completed_at: new Date().toISOString() })
+      .update({ status: "complete", completed_at: finishedAt, job_finished_at: finishedAt })
       .eq("property_id", propertyId)
       .eq("status", "in_progress");
     setLoading(false);

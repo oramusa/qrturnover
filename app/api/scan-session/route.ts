@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // Public route — cleaners have no login session, only a cleanerId stored in the
 // browser's localStorage (cookies proved unreliable on some mobile browsers, see
@@ -9,7 +10,23 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 // A QR code encodes {setId, zoneSlug} — stable regardless of which property has
 // the physical sheet claimed. This route resolves that pair through the active
 // property_set_claims row to find the actual property.
+//
+// Rate limited (rather than requiring auth) because set_id values are
+// sequential (SET_001, SET_002, ...) and zone slugs come from a small fixed
+// vocabulary — without a limit, this route would let anyone enumerate every
+// claimed property's name and checklist by brute-forcing ids.
 export async function GET(req: NextRequest) {
+  const rateLimit = await checkRateLimit(req, "scan-session", 60, 15 * 60);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a bit and try again." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+      }
+    );
+  }
+
   const setId = req.nextUrl.searchParams.get("setId");
   const zoneSlug = req.nextUrl.searchParams.get("zoneSlug");
   const cleanerId = req.nextUrl.searchParams.get("cleanerId");
