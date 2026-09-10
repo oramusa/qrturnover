@@ -40,14 +40,23 @@ export async function POST(req: NextRequest) {
     .eq("id", cleanerId)
     .single();
 
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from("turnover_sessions")
     .update({ cleaner_id: cleanerId, job_started_at: new Date().toISOString() })
     .eq("id", sessionId)
-    .is("job_started_at", null);
+    .is("job_started_at", null)
+    .select("id")
+    .maybeSingle();
 
   if (updateError) {
     return NextResponse.json({ error: "Couldn't start this job" }, { status: 500 });
+  }
+  if (!updated) {
+    // Another cleaner's request won the same race an instant earlier.
+    return NextResponse.json(
+      { error: "This turnover was just started by another cleaner." },
+      { status: 409 }
+    );
   }
 
   const property = session.properties as unknown as { name: string; hosts: { email: string } };

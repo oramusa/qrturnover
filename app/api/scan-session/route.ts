@@ -74,7 +74,15 @@ export async function GET(req: NextRequest) {
       .eq("id", cleanerId)
       .eq("host_id", hostId)
       .maybeSingle();
-    cleanerName = cleaner?.name ?? null;
+    if (cleaner) {
+      const { data: assignment } = await supabase
+        .from("property_cleaners")
+        .select("cleaner_id")
+        .eq("property_id", propertyId)
+        .eq("cleaner_id", cleanerId)
+        .maybeSingle();
+      cleanerName = assignment ? cleaner.name : null;
+    }
   }
 
   const { data: zoneSettings } = await supabase

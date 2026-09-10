@@ -21,12 +21,18 @@ export default function JobControls({
 
   async function startJob() {
     setLoading(true);
-    await fetch("/api/session/start-job", {
+    setError(null);
+    const res = await fetch("/api/session/start-job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId, cleanerId }),
     });
     setLoading(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Couldn't start the job. Please try again.");
+      return;
+    }
     onChange();
   }
 
@@ -72,13 +78,16 @@ export default function JobControls({
 
   if (!jobStartedAt) {
     return (
-      <button
-        onClick={startJob}
-        disabled={loading}
-        className="mt-4 w-full bg-black text-white rounded py-3 font-medium disabled:opacity-50"
-      >
-        {loading ? "Starting..." : "Start job"}
-      </button>
+      <div className="mt-4">
+        <button
+          onClick={startJob}
+          disabled={loading}
+          className="w-full bg-black text-white rounded py-3 font-medium disabled:opacity-50"
+        >
+          {loading ? "Starting..." : "Start job"}
+        </button>
+        {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+      </div>
     );
   }
 

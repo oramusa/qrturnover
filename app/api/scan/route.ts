@@ -19,6 +19,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing setId, zoneSlug, sessionId, or cleanerId" }, { status: 400 });
   }
 
+  const MAX_PHOTOS = 10;
+  const MAX_PHOTO_BYTES = 15 * 1024 * 1024; // 15MB — generous headroom over the client's compressed output
+  const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
+
+  if (photos.length > MAX_PHOTOS) {
+    return NextResponse.json({ error: `Too many photos — please upload ${MAX_PHOTOS} or fewer at a time.` }, { status: 400 });
+  }
+  for (const photo of photos) {
+    if (!ALLOWED_PHOTO_TYPES.has(photo.type)) {
+      return NextResponse.json({ error: "Photos must be JPG, PNG, WebP, or HEIC." }, { status: 400 });
+    }
+    if (photo.size > MAX_PHOTO_BYTES) {
+      return NextResponse.json({ error: "One of these photos is too large — please try a smaller one." }, { status: 400 });
+    }
+  }
+
   const supabase = createServiceRoleClient();
 
   const { data: zoneDef } = await supabase

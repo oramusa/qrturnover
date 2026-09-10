@@ -75,6 +75,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Re-check checklist completion here too, not just at scan time — a host
+  // can add a checklist item to an already-scanned zone mid-turnover, and
+  // that item would otherwise never get gated.
+  const { data: checklistItems } = await supabase
+    .from("zone_checklist_items")
+    .select("id, zone_slug")
+    .eq("property_id", session.property_id);
+
+  if (checklistItems && checklistItems.length > 0) {
+    const { data: completions } = await supabase
+      .from("scan_item_completions")
+      .select("item_id")
+      .eq("session_id", sessionId);
+    const completedIds = new Set((completions ?? []).map((c) => c.item_id));
+    const remaining = checklistItems.filter((i) => !completedIds.has(i.id)).length;
+    if (remaining > 0) {
+      return NextResponse.json(
+        { error: `${remaining} checklist item${remaining === 1 ? "" : "s"} still need${remaining === 1 ? "s" : ""} to be checked off` },
+        { status: 400 }
+      );
+    }
+  }
+
   const finishedAt = new Date();
 
   const { error: updateError } = await supabase
