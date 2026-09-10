@@ -65,15 +65,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const response = NextResponse.json({ ok: true, id: cleaner.id, name: cleaner.name });
-  const cookieOpts = {
-    httpOnly: false, // client needs to read it to show "Logged in as X"
-    maxAge: 60 * 60 * 24 * 90, // 90 days — cleaners shouldn't have to re-enter often
-    sameSite: "lax" as const,
-    path: "/",
-  };
-  response.cookies.set("cleaner_id", cleaner.id, cookieOpts);
-  response.cookies.set("cleaner_name", cleaner.name, cookieOpts);
-
-  return response;
+  return NextResponse.json({ ok: true, id: cleaner.id, name: cleaner.name });
 }
