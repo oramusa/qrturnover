@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // Cleaners don't have passwords — they enter a short code the host gave them once.
 // On success we set a cookie so they don't have to re-enter it at every zone on
@@ -7,6 +8,17 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 // forged cookie could misattribute a scan, but can't access any host data or
 // do anything more sensitive than "mark a zone done as the wrong cleaner."
 export async function POST(req: NextRequest) {
+  const rateLimit = await checkRateLimit(req, "cleaner-auth", 10, 15 * 60);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many code attempts. Please wait 15 minutes and try again." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+      }
+    );
+  }
+
   const { setId, code } = await req.json();
 
   if (!setId || !code) {

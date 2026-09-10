@@ -565,3 +565,79 @@ alter publication supabase_realtime add table public.scan_event_photos;
 
 create unique index if not exists idx_turnover_sessions_one_active_per_property
   on public.turnover_sessions(property_id) where status = 'in_progress';
+
+-- ============================================================================
+-- SERVER-SIDE RATE LIMITING
+--
+-- Counters live in a non-exposed schema and can only be updated through an
+-- atomic service-role RPC. API routes store a SHA-256 IP fingerprint, never a
+-- visitor's raw IP address.
+-- ============================================================================
+
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+
+create table if not exists private.rate_limit_counters (
+  bucket_key text primary key,
+  window_started_at timestamptz not null default now(),
+  request_count integer not null default 1 check (request_count > 0)
+);
+
+create or replace function public.check_rate_limit(
+  p_bucket_key text,
+  p_limit integer,
+  p_window_seconds integer
+)
+returns table (allowed boolean, retry_after_seconds integer)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_count integer;
+  v_started_at timestamptz;
+begin
+  if length(p_bucket_key) > 200
+     or p_limit < 1 or p_limit > 1000
+     or p_window_seconds < 1 or p_window_seconds > 86400 then
+    raise exception 'Invalid rate limit parameters';
+  end if;
+
+  insert into private.rate_limit_counters as counters (
+    bucket_key,
+    window_started_at,
+    request_count
+  )
+  values (p_bucket_key, now(), 1)
+  on conflict (bucket_key) do update
+  set
+    window_started_at = case
+      when counters.window_started_at <= now() - make_interval(secs => p_window_seconds)
+        then now()
+      else counters.window_started_at
+    end,
+    request_count = case
+      when counters.window_started_at <= now() - make_interval(secs => p_window_seconds)
+        then 1
+      else counters.request_count + 1
+    end
+  returning request_count, window_started_at into v_count, v_started_at;
+
+  allowed := v_count <= p_limit;
+  retry_after_seconds := case
+    when allowed then 0
+    else greatest(
+      1,
+      ceil(extract(epoch from (
+        v_started_at + make_interval(secs => p_window_seconds) - now()
+      )))::integer
+    )
+  end;
+  return next;
+end;
+$$;
+
+revoke all on function public.check_rate_limit(text, integer, integer)
+  from public, anon, authenticated;
+grant execute on function public.check_rate_limit(text, integer, integer)
+  to service_role;
