@@ -35,3 +35,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* These surfaces stay dark in both system themes, so their default text must
+   not inherit the near-black foreground used by light mode. :where() keeps
+   specificity at zero, allowing explicit status and muted colors to win. */
+:where(.bg-gray-950) {
+  color: #f9fafb;
+  color-scheme: dark;
+}

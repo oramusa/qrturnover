@@ -14,14 +14,22 @@ export default function AppNav({
 }) {
   return (
     <header className="border-b border-gray-800">
-      <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
         <Link href="/dashboard" className="flex items-center shrink-0" aria-label="QRTurnover dashboard">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand-logo-dark.png"
-            alt="QRTurnover"
-            className="w-40 h-10 object-contain object-left"
+            src="/brand-icon-192.png"
+            alt=""
+            className="w-9 h-9 object-contain sm:hidden"
           />
+          <picture className="hidden sm:block">
+            <source media="(prefers-color-scheme: dark)" srcSet="/brand-logo-dark.png" />
+            <img
+              src="/brand-logo-light.png"
+              alt="QRTurnover"
+              className="w-40 h-10 object-contain object-left"
+            />
+          </picture>
         </Link>
         <nav className="flex items-center gap-1 text-sm overflow-x-auto flex-nowrap min-w-0 ml-auto">
           {NAV_ITEMS.map((item) => (

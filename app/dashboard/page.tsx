@@ -92,17 +92,17 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid sm:grid-cols-3 gap-3 mt-7">
-          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
-            <p className="text-xs text-muted">Properties</p>
-            <p className="text-2xl font-semibold mt-1">{properties?.length ?? 0}</p>
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950 text-white">
+            <p className="text-xs text-gray-400">Properties</p>
+            <p className="text-2xl font-semibold mt-1 text-white">{properties?.length ?? 0}</p>
           </div>
-          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
-            <p className="text-xs text-muted">Turnovers in progress</p>
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950 text-white">
+            <p className="text-xs text-gray-400">Turnovers in progress</p>
             <p className="text-2xl font-semibold mt-1 text-green-400">{activeSessions.length}</p>
           </div>
-          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950">
-            <p className="text-xs text-muted">Completed this month</p>
-            <p className="text-2xl font-semibold mt-1">{completedThisMonth ?? 0}</p>
+          <div className="border border-gray-800 rounded-xl p-4 bg-gray-950 text-white">
+            <p className="text-xs text-gray-400">Completed this month</p>
+            <p className="text-2xl font-semibold mt-1 text-white">{completedThisMonth ?? 0}</p>
           </div>
         </div>
 
@@ -133,12 +133,12 @@ export default async function DashboardPage() {
               <Link
                 key={property.id}
                 href={`/properties/${property.slug ?? property.id}`}
-                className="group border border-gray-800 rounded-xl p-5 bg-gray-950 hover:bg-gray-900 transition-colors"
+                className="group border border-gray-800 rounded-xl p-5 bg-gray-950 text-white hover:bg-gray-900 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-medium break-words">{property.name}</h3>
-                    <p className="text-xs text-muted mt-1 break-words">
+                    <h3 className="font-medium text-white break-words">{property.name}</h3>
+                    <p className="text-xs text-gray-400 mt-1 break-words">
                       {zoneCount} zone{zoneCount === 1 ? "" : "s"}
                       {property.address ? ` · ${property.address}` : ""}
                     </p>
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
                   />
                 </div>
                 <div className="flex items-center justify-between gap-3 mt-3 text-xs">
-                  <span className="text-muted">
+                  <span className="text-gray-400">
                     {activeSession
                       ? `${scannedCount} of ${zoneCount} zones verified`
                       : zoneCount > 0
