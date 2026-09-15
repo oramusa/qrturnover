@@ -157,10 +157,10 @@ export default async function PropertyPage({
           </div>
           <div className="flex items-center gap-4 shrink-0">
             <Link
-              href={`/properties/${slug}/print`}
-              className="text-sm border border-gray-700 rounded-lg px-3 py-2 hover:bg-gray-900"
+              href={`/properties/${slug}/qr-kit`}
+              className="text-sm bg-green-600 text-white font-medium rounded-lg px-4 py-2.5 hover:bg-green-500 shadow-lg shadow-green-950/20"
             >
-              Print QR sheet
+              Get QR Kit
             </Link>
             <DeletePropertyButton propertyId={id} propertyName={property.name} />
           </div>
