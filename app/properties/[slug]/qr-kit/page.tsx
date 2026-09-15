@@ -79,14 +79,17 @@ export default async function QrKitPage({
             <div className="w-11 h-11 rounded-xl bg-gray-900 text-green-300 flex items-center justify-center text-xl" aria-hidden="true">
               ✦
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-300 mt-5">Coming soon</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-300 mt-5">Delivered to you</p>
             <h2 className="text-xl font-semibold mt-1">Waterproof kit</h2>
             <p className="text-sm text-gray-400 mt-2 flex-1">
               Professionally printed, room-labeled waterproof QR cards delivered to the property.
             </p>
-            <span className="mt-6 bg-gray-900 text-gray-500 text-sm font-medium rounded-lg px-4 py-3 text-center cursor-not-allowed">
-              Mail delivery coming soon
-            </span>
+            <Link
+              href={`/properties/${slug}/qr-kit/order`}
+              className="mt-6 bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg px-4 py-3 text-center"
+            >
+              Review and order · $39
+            </Link>
           </section>
         </div>
 
