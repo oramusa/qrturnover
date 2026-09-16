@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe";
+import { calculateQrKitPrice, MAX_QR_KIT_PROPERTIES } from "@/lib/qrKitPricing";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -9,30 +10,45 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
 
   const body = await request.json().catch(() => null);
-  if (!body?.propertyId || typeof body.propertyId !== "string") {
-    return NextResponse.json({ error: "Choose a property first." }, { status: 400 });
+  const propertyIds: string[] = Array.isArray(body?.propertyIds)
+    ? [...new Set<string>(body.propertyIds.filter((id: unknown): id is string => typeof id === "string"))]
+    : [];
+  if (propertyIds.length < 1 || propertyIds.length > MAX_QR_KIT_PROPERTIES) {
+    return NextResponse.json({ error: `Choose between 1 and ${MAX_QR_KIT_PROPERTIES} properties.` }, { status: 400 });
   }
 
-  const [{ data: property }, { data: host }] = await Promise.all([
-    supabase.from("properties").select("id, name, slug").eq("id", body.propertyId).eq("host_id", user.id).single(),
+  const [{ data: properties }, { data: host }] = await Promise.all([
+    supabase.from("properties").select("id, name, slug").in("id", propertyIds).eq("host_id", user.id),
     supabase.from("hosts").select("stripe_customer_id").eq("id", user.id).single(),
   ]);
 
-  if (!property) return NextResponse.json({ error: "Property not found." }, { status: 404 });
-  const { data: claim } = await supabase
+  if (!properties || properties.length !== propertyIds.length) return NextResponse.json({ error: "One or more properties could not be found." }, { status: 404 });
+  const propertyMap = new Map(properties.map((property) => [property.id, property]));
+  const orderedProperties = propertyIds.map((id) => propertyMap.get(id)!);
+  const { data: claims } = await supabase
     .from("property_set_claims")
-    .select("set_id")
-    .eq("property_id", property.id)
-    .is("released_at", null)
-    .maybeSingle();
-  const { count } = claim
+    .select("property_id, set_id")
+    .in("property_id", propertyIds)
+    .is("released_at", null);
+  const setIds = (claims ?? []).map((claim) => claim.set_id);
+  const { data: zones } = setIds.length > 0
     ? await supabase
         .from("qr_set_zones")
-        .select("zone_slug", { count: "exact", head: true })
-        .eq("set_id", claim.set_id)
-    : { count: 0 };
-  const zoneCount = count ?? 0;
-  if (zoneCount === 0) return NextResponse.json({ error: "Add at least one room before ordering." }, { status: 400 });
+        .select("set_id")
+        .in("set_id", setIds)
+    : { data: [] as { set_id: string }[] };
+  const propertyBySet = new Map((claims ?? []).map((claim) => [claim.set_id, claim.property_id]));
+  const zoneCountByProperty = new Map<string, number>();
+  for (const zone of zones ?? []) {
+    const propertyId = propertyBySet.get(zone.set_id);
+    if (propertyId) zoneCountByProperty.set(propertyId, (zoneCountByProperty.get(propertyId) ?? 0) + 1);
+  }
+  if (propertyIds.some((id) => !zoneCountByProperty.get(id))) {
+    return NextResponse.json({ error: "Every selected property needs at least one room." }, { status: 400 });
+  }
+  const zoneCount = propertyIds.reduce((total, id) => total + (zoneCountByProperty.get(id) ?? 0), 0);
+  const totalCents = calculateQrKitPrice(propertyIds.length);
+  const primaryProperty = orderedProperties[0];
 
   try {
     const stripe = createStripeClient();
@@ -44,23 +60,25 @@ export async function POST(request: Request) {
         quantity: 1,
         price_data: {
           currency: "usd",
-          unit_amount: 3900,
+          unit_amount: totalCents,
           product_data: {
-            name: `Waterproof QR Kit — ${property.name}`,
-            description: `${zoneCount} room-labeled waterproof QR card${zoneCount === 1 ? "" : "s"}, US shipping included`,
+            name: `Waterproof QR Kits — ${propertyIds.length} ${propertyIds.length === 1 ? "property" : "properties"}`,
+            description: `${zoneCount} room-labeled waterproof QR card${zoneCount === 1 ? "" : "s"} in one shipment, US shipping included`,
           },
         },
       }],
       shipping_address_collection: { allowed_countries: ["US"] },
       phone_number_collection: { enabled: true },
-      success_url: `${appUrl}/properties/${property.slug}/qr-kit/order/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/properties/${property.slug}/qr-kit/order`,
+      success_url: `${appUrl}/properties/${primaryProperty.slug}/qr-kit/order/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/properties/${primaryProperty.slug}/qr-kit/order`,
       metadata: {
         purchase_type: "waterproof_qr_kit",
         host_id: user.id,
-        property_id: property.id,
-        property_slug: property.slug,
-        property_name: property.name,
+        property_id: primaryProperty.id,
+        property_ids: propertyIds.join(","),
+        property_slug: primaryProperty.slug,
+        property_name: primaryProperty.name,
+        property_count: String(propertyIds.length),
         zone_count: String(zoneCount),
       },
     });
