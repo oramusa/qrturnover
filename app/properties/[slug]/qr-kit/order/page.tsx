@@ -12,13 +12,26 @@ export default async function WaterproofKitOrderPage({ params }: { params: Promi
   const userId = user.id;
 
   const [{ data: property }, { data: host }] = await Promise.all([
-    supabase.from("properties").select("id, name, address, zones(id, name)").eq("slug", slug).single(),
+    supabase.from("properties").select("id, name, address").eq("slug", slug).single(),
     supabase.from("hosts").select("address_line, city, state, zip_code, country").eq("id", userId).single(),
   ]);
 
   if (!property) return <div className="p-6">Property not found.</div>;
 
-  const zones = [...(property.zones ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("set_id")
+    .eq("property_id", property.id)
+    .is("released_at", null)
+    .maybeSingle();
+  const { data: setZones } = claim
+    ? await supabase
+        .from("qr_set_zones")
+        .select("zone_slug, zone_label, sort_order")
+        .eq("set_id", claim.set_id)
+        .order("sort_order", { ascending: true })
+    : { data: [] as { zone_slug: string; zone_label: string; sort_order: number }[] };
+  const zones = (setZones ?? []).map((zone) => ({ id: zone.zone_slug, name: zone.zone_label }));
   const addressComplete = Boolean(host?.address_line && host.city && host.state && host.zip_code && host.country);
   const address = [host?.address_line, host?.city, host?.state, host?.zip_code, host?.country].filter(Boolean).join(", ");
 

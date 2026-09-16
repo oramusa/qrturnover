@@ -14,12 +14,24 @@ export async function POST(request: Request) {
   }
 
   const [{ data: property }, { data: host }] = await Promise.all([
-    supabase.from("properties").select("id, name, slug, zones(id)").eq("id", body.propertyId).eq("host_id", user.id).single(),
+    supabase.from("properties").select("id, name, slug").eq("id", body.propertyId).eq("host_id", user.id).single(),
     supabase.from("hosts").select("stripe_customer_id").eq("id", user.id).single(),
   ]);
 
   if (!property) return NextResponse.json({ error: "Property not found." }, { status: 404 });
-  const zoneCount = property.zones?.length ?? 0;
+  const { data: claim } = await supabase
+    .from("property_set_claims")
+    .select("set_id")
+    .eq("property_id", property.id)
+    .is("released_at", null)
+    .maybeSingle();
+  const { count } = claim
+    ? await supabase
+        .from("qr_set_zones")
+        .select("zone_slug", { count: "exact", head: true })
+        .eq("set_id", claim.set_id)
+    : { count: 0 };
+  const zoneCount = count ?? 0;
   if (zoneCount === 0) return NextResponse.json({ error: "Add at least one room before ordering." }, { status: 400 });
 
   try {
