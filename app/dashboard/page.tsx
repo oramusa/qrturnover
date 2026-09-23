@@ -126,7 +126,7 @@ export default async function DashboardPage() {
             );
             const scannedCount = activeSession
               ? scannedCountBySession.get(activeSession.id) ?? 0
-              : zoneCount;
+              : 0;
             const progress = zoneCount > 0 ? Math.min(100, Math.round((scannedCount / zoneCount) * 100)) : 0;
 
             return (
@@ -154,13 +154,24 @@ export default async function DashboardPage() {
                   </span>
                 </div>
 
-                <div className="h-2 bg-gray-800 rounded-full overflow-hidden mt-5">
+                {activeSession ? (
                   <div
-                    className="h-full bg-green-500 rounded-full"
-                    style={{ width: `${progress}%` }}
-                    aria-hidden="true"
-                  />
-                </div>
+                    className="h-2 bg-gray-800 rounded-full overflow-hidden mt-5"
+                    role="progressbar"
+                    aria-label={`${property.name} turnover progress`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={progress}
+                  >
+                    <div
+                      className="h-full bg-green-500 rounded-full"
+                      style={{ width: `${progress}%` }}
+                      aria-hidden="true"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-2 mt-5" aria-hidden="true" />
+                )}
                 <div className="flex items-center justify-between gap-3 mt-3 text-xs">
                   <span className="text-gray-400">
                     {activeSession
