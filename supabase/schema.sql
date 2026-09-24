@@ -152,6 +152,33 @@ alter table public.property_cleaners enable row level security;
 alter table public.qr_kit_orders enable row level security;
 alter table public.qr_kit_order_properties enable row level security;
 
+-- Central entitlement check used by RLS. SECURITY DEFINER lets this function
+-- read the caller's host row without recursively invoking the hosts policies.
+create or replace function public.current_host_has_product_access()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.hosts h
+    where h.id = (select auth.uid())
+      and (
+        h.subscription_status = 'active'
+        or (
+          h.subscription_status = 'trialing'
+          and h.trial_ends_at is not null
+          and h.trial_ends_at > now()
+        )
+      )
+  );
+$$;
+
+revoke all on function public.current_host_has_product_access() from public;
+grant execute on function public.current_host_has_product_access() to authenticated;
+
 drop policy if exists "hosts read own row" on public.hosts;
 create policy "hosts read own row" on public.hosts
   for select using (auth.uid() = id);
@@ -164,7 +191,13 @@ create policy "hosts update own row" on public.hosts
 
 drop policy if exists "hosts manage own properties" on public.properties;
 create policy "hosts manage own properties" on public.properties
-  for all using (auth.uid() = host_id);
+  for all using (
+    auth.uid() = host_id
+    and (select public.current_host_has_product_access())
+  ) with check (
+    auth.uid() = host_id
+    and (select public.current_host_has_product_access())
+  );
 
 drop policy if exists "hosts manage zones on own properties" on public.zones;
 create policy "hosts manage zones on own properties" on public.zones
@@ -190,7 +223,13 @@ create policy "hosts read scan records on own properties" on public.scan_records
 
 drop policy if exists "hosts manage own cleaners" on public.cleaners;
 create policy "hosts manage own cleaners" on public.cleaners
-  for all using (auth.uid() = host_id);
+  for all using (
+    auth.uid() = host_id
+    and (select public.current_host_has_product_access())
+  ) with check (
+    auth.uid() = host_id
+    and (select public.current_host_has_product_access())
+  );
 
 drop policy if exists "hosts manage assignments on own properties" on public.property_cleaners;
 create policy "hosts manage assignments on own properties" on public.property_cleaners

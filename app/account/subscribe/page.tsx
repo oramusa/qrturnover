@@ -8,7 +8,13 @@ const INCLUDED = [
   "Full turnover history and reporting",
 ];
 
-export default function SubscribePage() {
+export default async function SubscribePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
+
   return (
     <>
       <AppNav current="/account" />
@@ -20,6 +26,24 @@ export default function SubscribePage() {
           <h1 className="text-3xl font-semibold">Subscribe to QRTurnover</h1>
           <p className="text-sm text-muted mt-2">Keep every property covered, no gaps.</p>
         </div>
+
+        {reason === "trial_expired" && (
+          <div className="border border-amber-800 bg-amber-950/40 text-amber-100 rounded-xl p-4 mb-6">
+            <p className="text-sm font-medium">Your 14-day free trial has ended.</p>
+            <p className="text-xs text-amber-100/80 mt-1">
+              Subscribe below to restore access to your properties, cleaners, and turnover history.
+            </p>
+          </div>
+        )}
+
+        {reason === "access_unavailable" && (
+          <div className="border border-red-900 bg-red-950/40 text-red-100 rounded-xl p-4 mb-6">
+            <p className="text-sm font-medium">We couldn&apos;t verify your account access.</p>
+            <p className="text-xs text-red-100/80 mt-1">
+              Please try again. If this continues, contact QRTurnover support.
+            </p>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-[minmax(0,0.8fr)_minmax(480px,1.2fr)] gap-6 items-start">
           <section className="border border-gray-800 rounded-2xl p-6 bg-gray-950 lg:sticky lg:top-6">

@@ -1,5 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { hasProductAccess } from "@/lib/entitlement";
+
+function redirectWithCookies(url: URL, response: NextResponse) {
+  const redirect = NextResponse.redirect(url);
+  response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  return redirect;
+}
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -33,7 +40,31 @@ export async function proxy(request: NextRequest) {
     url.pathname = "/login";
     url.search = "";
     url.searchParams.set("redirect", originalPath);
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url, response);
+  }
+
+  // Billing pages must remain available so an expired host can subscribe,
+  // manage payment, or sign out. All other matched routes require entitlement.
+  if (request.nextUrl.pathname.startsWith("/account")) {
+    return response;
+  }
+
+  const { data: host, error: hostError } = await supabase
+    .from("hosts")
+    .select("subscription_status, trial_ends_at")
+    .eq("id", user.id)
+    .single();
+
+  if (hostError) {
+    console.error("Failed to verify host entitlement", hostError);
+  }
+
+  if (!hasProductAccess(host)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/account/subscribe";
+    url.search = "";
+    url.searchParams.set("reason", hostError ? "access_unavailable" : "trial_expired");
+    return redirectWithCookies(url, response);
   }
 
   return response;
