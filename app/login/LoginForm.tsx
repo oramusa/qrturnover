@@ -65,23 +65,31 @@ export default function LoginForm() {
         <div className="border border-gray-800 rounded-xl bg-gray-950 p-6 sm:p-8">
           <h1 className="text-xl font-semibold mb-6">Log in</h1>
           <form onSubmit={handleLogin} className="space-y-3">
+            <label htmlFor="login-email" className="sr-only">Email</label>
             <input
+              id="login-email"
+              name="email"
               type="email"
+              autoComplete="email"
               placeholder="Email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
             />
+            <label htmlFor="login-password" className="sr-only">Password</label>
             <input
+              id="login-password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               placeholder="Password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
             />
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p role="alert" aria-live="polite" className="text-red-400 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}

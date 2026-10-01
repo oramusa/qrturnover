@@ -47,6 +47,9 @@ export default function AuthModalProvider({ children }: { children: React.ReactN
           <div
             className="w-full max-w-sm bg-white text-gray-900 rounded-2xl shadow-xl p-6 sm:p-8 relative"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={mode === "signup" ? "Create your host account" : mode === "forgot" ? "Reset your password" : "Log in to QRTurnover"}
           >
             <button
               type="button"
@@ -144,23 +147,31 @@ function LoginModalForm({
     <>
       <h2 className="text-xl font-semibold mb-6">Log in</h2>
       <form onSubmit={handleSubmit} className="space-y-3">
+        <label htmlFor="modal-login-email" className="sr-only">Email</label>
         <input
+          id="modal-login-email"
+          name="email"
           type="email"
+          autoComplete="email"
           placeholder="Email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
         />
+        <label htmlFor="modal-login-password" className="sr-only">Password</label>
         <input
+          id="modal-login-password"
+          name="password"
           type="password"
+          autoComplete="current-password"
           placeholder="Password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
         />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p role="alert" aria-live="polite" className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
           disabled={loading}
@@ -246,16 +257,24 @@ function SignupModalForm({
     <>
       <h2 className="text-xl font-semibold mb-6">Create your host account</h2>
       <form onSubmit={handleSubmit} className="space-y-3">
+        <label htmlFor="modal-signup-email" className="sr-only">Email</label>
         <input
+          id="modal-signup-email"
+          name="email"
           type="email"
+          autoComplete="email"
           placeholder="Email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
         />
+        <label htmlFor="modal-signup-password" className="sr-only">Password</label>
         <input
+          id="modal-signup-password"
+          name="password"
           type="password"
+          autoComplete="new-password"
           placeholder="Password"
           required
           minLength={6}
@@ -263,7 +282,7 @@ function SignupModalForm({
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
         />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p role="alert" aria-live="polite" className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
           disabled={loading}
@@ -323,15 +342,19 @@ function ForgotModalForm({
         Enter your email and we&apos;ll send you a link to set a new password.
       </p>
       <form onSubmit={handleSubmit} className="space-y-3">
+        <label htmlFor="modal-forgot-email" className="sr-only">Email</label>
         <input
+          id="modal-forgot-email"
+          name="email"
           type="email"
+          autoComplete="email"
           placeholder="Email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
         />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p role="alert" aria-live="polite" className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
           disabled={loading}

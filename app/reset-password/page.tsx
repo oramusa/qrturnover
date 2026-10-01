@@ -54,8 +54,12 @@ export default function ResetPasswordPage() {
         <div className="border border-gray-800 rounded-xl bg-gray-950 p-6 sm:p-8">
           <h1 className="text-xl font-semibold mb-6">Set a new password</h1>
           <form onSubmit={handleSubmit} className="space-y-3">
+            <label htmlFor="new-password" className="sr-only">New password</label>
             <input
+              id="new-password"
+              name="new-password"
               type="password"
+              autoComplete="new-password"
               placeholder="New password"
               required
               minLength={6}
@@ -63,8 +67,12 @@ export default function ResetPasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
             />
+            <label htmlFor="confirm-password" className="sr-only">Confirm new password</label>
             <input
+              id="confirm-password"
+              name="confirm-password"
               type="password"
+              autoComplete="new-password"
               placeholder="Confirm new password"
               required
               minLength={6}
@@ -72,7 +80,7 @@ export default function ResetPasswordPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
             />
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p role="alert" aria-live="polite" className="text-red-400 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}

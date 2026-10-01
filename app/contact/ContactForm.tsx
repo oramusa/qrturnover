@@ -15,19 +15,24 @@ export default function ContactForm() {
     setStatus("sending");
     setError(null);
 
-    const res = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, message }),
-    });
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "Couldn't send your message — please try again.");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? "Couldn't send your message — please try again.");
+        setStatus("error");
+        return;
+      }
+      setStatus("sent");
+    } catch {
+      setError("Couldn't send your message — please check your connection and try again.");
       setStatus("error");
-      return;
     }
-    setStatus("sent");
   }
 
   if (status === "sent") {
@@ -52,30 +57,41 @@ export default function ContactForm() {
         Questions, feedback, or something not working? Send us a message.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <label htmlFor="contact-name" className="block text-sm font-medium mb-1">Name <span className="text-muted font-normal">(optional)</span></label>
         <input
+          id="contact-name"
+          name="name"
           type="text"
-          placeholder="Your name (optional)"
+          autoComplete="name"
+          maxLength={100}
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border rounded px-3 py-2 bg-white text-gray-900"
         />
+        <label htmlFor="contact-email" className="block text-sm font-medium mb-1">Email</label>
         <input
+          id="contact-email"
+          name="email"
           type="email"
-          placeholder="Your email"
+          autoComplete="email"
+          maxLength={254}
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border rounded px-3 py-2 bg-white text-gray-900"
         />
+        <label htmlFor="contact-message" className="block text-sm font-medium mb-1">Message</label>
         <textarea
-          placeholder="Message"
+          id="contact-message"
+          name="message"
           required
+          maxLength={5000}
           rows={5}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="w-full border rounded px-3 py-2 bg-white text-gray-900"
         />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p role="alert" aria-live="polite" className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
           disabled={status === "sending"}

@@ -76,15 +76,19 @@ export default function ForgotPasswordPage() {
             Enter your email and we&apos;ll send you a link to set a new password.
           </p>
           <form onSubmit={handleSubmit} className="space-y-3">
+            <label htmlFor="forgot-email" className="sr-only">Email</label>
             <input
+              id="forgot-email"
+              name="email"
               type="email"
+              autoComplete="email"
               placeholder="Email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
             />
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p role="alert" aria-live="polite" className="text-red-400 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={status === "sending"}

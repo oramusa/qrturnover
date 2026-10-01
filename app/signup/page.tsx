@@ -65,16 +65,24 @@ export default function SignupPage() {
         <div className="border border-gray-800 rounded-xl bg-gray-950 p-6 sm:p-8">
           <h1 className="text-xl font-semibold mb-6">Create your host account</h1>
           <form onSubmit={handleSignup} className="space-y-3">
+            <label htmlFor="signup-email" className="sr-only">Email</label>
             <input
+              id="signup-email"
+              name="email"
               type="email"
+              autoComplete="email"
               placeholder="Email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
             />
+            <label htmlFor="signup-password" className="sr-only">Password</label>
             <input
+              id="signup-password"
+              name="password"
               type="password"
+              autoComplete="new-password"
               placeholder="Password"
               required
               minLength={6}
@@ -82,7 +90,7 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-900 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-600"
             />
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p role="status" aria-live="polite" className="text-red-400 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}
