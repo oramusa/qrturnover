@@ -6,7 +6,14 @@ import AuthTriggerButton from "./components/AuthTriggerButton";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
-  openGraph: { url: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "QRTurnover",
+    title: "QRTurnover — Cleaning Verification for STR Hosts",
+    description: "Track short-term rental cleaning live with room QR codes, checklists, and photo proof.",
+    url: "/",
+    images: [{ url: "/brand-logo-dark.png", width: 1200, height: 400, alt: "QRTurnover" }],
+  },
 };
 
 export default function Home() {

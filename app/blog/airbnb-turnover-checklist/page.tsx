@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     url: "/blog/airbnb-turnover-checklist",
     title: "Airbnb Turnover Checklist: How to Systemize Your Cleaning Process",
     description: "Build a consistent, zone-based Airbnb turnover checklist with clear tasks, photo proof, and live progress.",
+    images: [{ url: "/brand-logo-dark.png", width: 1200, height: 400, alt: "QRTurnover" }],
   },
 };
 
