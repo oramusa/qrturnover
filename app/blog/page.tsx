@@ -1,7 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import PublicNav from "@/app/components/PublicNav";
 
-export const metadata = { title: "Blog — QRTurnover" };
+export const metadata: Metadata = {
+  title: "Blog",
+  description: "Practical guides for more reliable short-term rental cleaning and turnover operations.",
+  alternates: { canonical: "/blog" },
+};
 
 const POSTS = [
   {

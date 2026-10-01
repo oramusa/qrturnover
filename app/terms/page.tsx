@@ -1,7 +1,12 @@
 import Link from "next/link";
 import PublicNav from "@/app/components/PublicNav";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Terms of Use — QRTurnover" };
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description: "Terms governing use of the QRTurnover cleaning-verification service.",
+  alternates: { canonical: "/terms" },
+};
 
 export default function TermsPage() {
   return (

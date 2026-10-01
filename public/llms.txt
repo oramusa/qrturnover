@@ -1,0 +1,12 @@
+# QRTurnover
+
+QRTurnover is a web application for short-term-rental hosts to verify property turnovers with room-specific QR codes, checklists, timestamps, and optional photo proof.
+
+## Authoritative public pages
+- Home: https://www.qrturnover.com/
+- Blog: https://www.qrturnover.com/blog
+- Contact: https://www.qrturnover.com/contact
+- Terms of Use: https://www.qrturnover.com/terms
+- Privacy Policy: https://www.qrturnover.com/privacy
+
+Private account, property-management, cleaner, scan, billing, and API routes are intentionally excluded.

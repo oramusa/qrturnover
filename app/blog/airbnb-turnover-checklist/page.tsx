@@ -1,8 +1,17 @@
 import Link from "next/link";
 import PublicNav from "@/app/components/PublicNav";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Airbnb Turnover Checklist: How to Systemize Your Cleaning Process — QRTurnover",
+export const metadata: Metadata = {
+  title: "Airbnb Turnover Checklist: How to Systemize Your Cleaning Process",
+  description: "Build a consistent, zone-based Airbnb turnover checklist with clear tasks, photo proof, and live progress.",
+  alternates: { canonical: "/blog/airbnb-turnover-checklist" },
+  openGraph: {
+    type: "article",
+    url: "/blog/airbnb-turnover-checklist",
+    title: "Airbnb Turnover Checklist: How to Systemize Your Cleaning Process",
+    description: "Build a consistent, zone-based Airbnb turnover checklist with clear tasks, photo proof, and live progress.",
+  },
 };
 
 export default function AirbnbTurnoverChecklistPost() {
@@ -131,8 +140,8 @@ export default function AirbnbTurnoverChecklistPost() {
             <a href="https://qrturnover.com" className="underline">
               QRTurnover
             </a>{" "}
-            was built exactly for this, using zone-based QR code tracking, and is currently
-            offering free beta access.
+            was built exactly for this, using zone-based QR code tracking, and offers a 14-day
+            free trial with no credit card required.
           </p>
 
           <hr className="border-gray-800 my-8" />

@@ -1,15 +1,51 @@
 import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
 import AuthModalProvider from "./components/AuthModal";
 import AuthTriggerButton from "./components/AuthTriggerButton";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { url: "/" },
+};
+
 export default function Home() {
+  const faq = [
+    ["Does my cleaner need to install an app?", "No. Cleaners scan the QR code with their phone, enter their access code, and complete the zone in the browser."],
+    ["Can I manage more than one property?", "Yes. A QRTurnover subscription includes unlimited properties, zones, cleaners, QR codes, and turnover history."],
+    ["Can I require photo proof?", "Yes. You can require a photo for any zone before the cleaner can mark that zone complete."],
+    ["Do I need a credit card for the trial?", "No. You can start the 14-day trial without entering a credit card."],
+  ];
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        name: "QRTurnover",
+        url: "https://www.qrturnover.com/",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        description: "Cleaning verification software for short-term rental hosts.",
+        offers: { "@type": "Offer", price: "19", priceCurrency: "USD" },
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: faq.map(([name, text]) => ({
+          "@type": "Question",
+          name,
+          acceptedAnswer: { "@type": "Answer", text },
+        })),
+      },
+    ],
+  };
+
   return (
     <AuthModalProvider>
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <header className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
         <Link href="/" aria-label="QRTurnover home">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand-logo-dark.png" alt="QRTurnover" className="w-44 h-11 object-contain object-left" />
+          <Image src="/brand-logo-dark.png" alt="QRTurnover" width={176} height={59} priority className="w-44 h-11 object-contain object-left" />
         </Link>
         <nav className="flex items-center gap-4 text-sm" aria-label="Main navigation">
           <a href="#how-it-works" className="hidden sm:inline text-muted hover:underline">How it works</a>
@@ -104,6 +140,21 @@ export default function Home() {
             Start free for 14 days
           </AuthTriggerButton>
           <p className="text-xs text-muted mt-3">No credit card required to start.</p>
+        </div>
+      </section>
+
+      <section className="max-w-3xl mx-auto px-6 pb-24" aria-labelledby="faq-heading">
+        <p className="text-sm font-medium text-emerald-700">FAQ</p>
+        <h2 id="faq-heading" className="text-3xl font-bold mt-2">Common questions</h2>
+        <div className="mt-8 divide-y border-y">
+          {faq.map(([question, answer]) => (
+            <details key={question} className="py-5 group">
+              <summary className="font-semibold cursor-pointer min-h-11 flex items-center justify-between gap-4">
+                {question}<span aria-hidden="true">+</span>
+              </summary>
+              <p className="text-muted text-sm leading-6 pt-2 pr-8">{answer}</p>
+            </details>
+          ))}
         </div>
       </section>
     </main>

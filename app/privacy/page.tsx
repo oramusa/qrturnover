@@ -1,7 +1,12 @@
 import Link from "next/link";
 import PublicNav from "@/app/components/PublicNav";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Privacy Policy — QRTurnover" };
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How QRTurnover collects, uses, stores, and protects service data.",
+  alternates: { canonical: "/privacy" },
+};
 
 export default function PrivacyPage() {
   return (
@@ -111,7 +116,9 @@ export default function PrivacyPage() {
           <h2 className="font-medium mb-2">7. Cookies</h2>
           <p>
             We use a minimal set of cookies required to keep you signed in and to remember your
-            session. We do not use third-party advertising or tracking cookies.
+            session. We also use Vercel Analytics and Speed Insights to collect privacy-focused,
+            aggregate usage and performance measurements. We do not use third-party advertising
+            pixels or advertising cookies.
           </p>
         </section>
 

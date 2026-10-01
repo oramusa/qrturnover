@@ -1,12 +1,30 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import RegisterServiceWorker from "./RegisterServiceWorker";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
-  title: "QRTurnover — cleaning verification for STR hosts",
+  metadataBase: new URL("https://www.qrturnover.com"),
+  title: {
+    default: "QRTurnover — Cleaning Verification for STR Hosts",
+    template: "%s | QRTurnover",
+  },
   description: "See exactly what got cleaned, zone by zone, without calling anyone.",
+  openGraph: {
+    type: "website",
+    siteName: "QRTurnover",
+    title: "QRTurnover — Cleaning Verification for STR Hosts",
+    description: "Track short-term rental cleaning live with room QR codes, checklists, and photo proof.",
+    images: [{ url: "/brand-logo-dark.png", width: 1200, height: 400, alt: "QRTurnover" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QRTurnover — Cleaning Verification for STR Hosts",
+    description: "Track short-term rental cleaning live with room QR codes, checklists, and photo proof.",
+    images: ["/brand-logo-dark.png"],
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -34,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Footer />
         <RegisterServiceWorker />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
